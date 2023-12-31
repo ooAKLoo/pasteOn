@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal Example</title>
+    <style>
+        #modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #modalContent {
+            width: 300px;
+            height: 100px;
+            background-color: white;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #modalInput {
+            border: 1px solid #ccc;
+            padding: 5px;
+            width: 100%;
+        }
+
+        #modalButton {
+            background-color: blue;
+            color: white;
+            padding: 10px 20px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* 对于 Chrome、Edge 和 Safari */
+        #modalInput::-webkit-inner-spin-button,
+        #modalInput::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<button id="openModalButton">Open Modal</button>
+
+<div id="modal">
+    <div id="modalContent">
+        <input id="modalInput" type="number" placeholder="Enter max length">
+        <button id="modalButton">Confirm</button>
+    </div>
+</div>
+
+<script>
+    document.getElementById('openModalButton').addEventListener('click', function() {
+        document.getElementById('modal').style.display = 'flex';
+    });
+
+    document.getElementById('modal').addEventListener('click', function(event) {
+        if (event.target === this) {
+            this.style.display = 'none';
+        }
+    });
+
+    document.getElementById('modalButton').addEventListener('click', function() {
+        const inputValue = document.getElementById('modalInput').value;
+        console.log("Input value:", inputValue);
+        document.getElementById('modal').style.display = 'none';
+    });
+</script>
+
+</body>
+</html>

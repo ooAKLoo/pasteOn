@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Clipboard History</title>
+    <style>
+        /* 添加您的样式 */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .draggable {
+            -webkit-app-region: drag;
+            /* 定义这个区域为可拖动区域 */
+            height: 100%;
+            /* 可调整高度 */
+            width: 100%;
+        }
+
+        #history {
+      
+            height: 140px;
+            /* 父元素高度 */
+            background: rgb(241 245 249);
+            /* 半透明背景 */
+            border-radius: 20px;
+            /* 圆角 */
+            overflow: auto;
+              /* overflow: auto; */
+              scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .history-item {
+            padding: 10px;
+        }
+
+        #history::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+
+
+</head>
+
+
+<body>
+    <div class="draggable">
+        <div id="history"></div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+        let clipboardHistory = [];
+        let currentIndex = 0;
+
+        ipcRenderer.on('display-clipboard-history', (event, history) => {
+            clipboardHistory = history;
+            currentIndex = clipboardHistory.length - 1; // 设置为最后一个元素
+            displayItem(currentIndex);
+        });
+
+        function displayItem(index) {
+            const historyDiv = document.getElementById('history');
+            historyDiv.innerHTML = '';
+            if (clipboardHistory.length > 0) {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                div.textContent = clipboardHistory[index];
+                historyDiv.appendChild(div);
+            }
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
+                if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+                    currentIndex = (currentIndex + (event.key === 'ArrowUp' ? -1 : 1) + clipboardHistory.length) % clipboardHistory.length;
+                    displayItem(currentIndex);
+                }
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            if (event.key === 'Control' || event.key === 'Command' || event.key === 'Shift') {
+                // 松开快捷键时，复制当前选中的历史记录到剪贴板
+                if (clipboardHistory.length > 0) {
+                    ipcRenderer.send('copy-from-history', clipboardHistory[currentIndex]);
+                }
+                ipcRenderer.send('hide-history-window');
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,24 @@
+# Node modules
+node_modules/
+
+# 打包输出
+dist/
+
+# 日志文件
+*.log
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 编辑器配置
+.vscode/
+.idea/
+
+# 个人备份文件
+*.bak
+*.tmp
+*.swp
+*.swo
+
+# 如果您有更多个人或特定的文件/文件夹需要忽略，可以在这里添加
