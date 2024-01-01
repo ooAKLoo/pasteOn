@@ -2,12 +2,11 @@ const webpack = require('webpack');
 const path = require('path');
 
 module.exports = {
-  mode: 'development',
+  mode: 'production',
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
-    // publicPath: '/',  // 确保公共路径设置正确
     assetModuleFilename: 'images/[hash][ext][query]'
   },
   devtool: 'inline-source-map',  // 开发工具配置，方便调试

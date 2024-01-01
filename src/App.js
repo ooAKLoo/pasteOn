@@ -69,7 +69,6 @@ useEffect(() => {
     };
   }, []);
   
-
   useEffect(() => {
     const interval = setInterval(() => {
       const text = clipboard.readText();

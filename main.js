@@ -89,7 +89,7 @@ function createHistoryWindow() {
 }
 
 function createTray() {
-    const pathToTheAppIcon = path.join(__dirname, './public/assets/appIcon.png'); // 请确保这里的路径指向一个有效的图标文件
+    const pathToTheAppIcon = path.join(__dirname, './public/assets/macTray.png'); // 请确保这里的路径指向一个有效的图标文件
     const appIcon = nativeImage.createFromPath(pathToTheAppIcon);
     tray = new Tray(appIcon);
     const contextMenu = Menu.buildFromTemplate([
