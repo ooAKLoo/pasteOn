@@ -12,55 +12,55 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [maxHistoryLength, setMaxHistoryLength] = useState(5); // 默认最大长度
 
-    // 定义回调函数
-    const openMaxLengthDialog = () => {
-      setShowModal(true);
+  // 定义回调函数
+  const openMaxLengthDialog = () => {
+    setShowModal(true);
+  };
+
+
+  // App.js
+  useEffect(() => {
+    const handleRequestClipboardHistory = () => {
+      ipcRenderer.send('send-clipboard-history', clipboardHistory);
     };
 
+    // 监听来自 main.js 的请求
+    ipcRenderer.on('request-clipboard-history', handleRequestClipboardHistory);
 
-// App.js
-useEffect(() => {
-  const handleRequestClipboardHistory = () => {
-    ipcRenderer.send('send-clipboard-history', clipboardHistory);
-  };
-
-  // 监听来自 main.js 的请求
-  ipcRenderer.on('request-clipboard-history', handleRequestClipboardHistory);
-
-  // 清除监听器
-  return () => {
-    ipcRenderer.removeListener('request-clipboard-history', handleRequestClipboardHistory);
-  };
-}, [clipboardHistory]); // 添加 clipboardHistory 作为依赖
+    // 清除监听器
+    return () => {
+      ipcRenderer.removeListener('request-clipboard-history', handleRequestClipboardHistory);
+    };
+  }, [clipboardHistory]); // 添加 clipboardHistory 作为依赖
 
 
-// App.js
-useEffect(() => {
-  const handleCopyFromHistory = (event, text) => {
-    if (clipboardHistory.includes(text)) {
-      const updatedHistory = clipboardHistory.filter(item => item !== text);
-      updatedHistory.push(text); // 将选中的文本移动到数组末尾
-      setClipboardHistory(updatedHistory); // 更新状态
-    }
-  };
-  
-  ipcRenderer.on('copy-from-history', handleCopyFromHistory);
-  
-  // 在组件卸载时，清除监听器
-  return () => {
-    ipcRenderer.removeListener('copy-from-history', handleCopyFromHistory);
-  };
-  
-}, [clipboardHistory]);
+  // App.js
+  useEffect(() => {
+    const handleCopyFromHistory = (event, text) => {
+      if (clipboardHistory.includes(text)) {
+        const updatedHistory = clipboardHistory.filter(item => item !== text);
+        updatedHistory.push(text); // 将选中的文本移动到数组末尾
+        setClipboardHistory(updatedHistory); // 更新状态
+      }
+    };
+
+    ipcRenderer.on('copy-from-history', handleCopyFromHistory);
+
+    // 在组件卸载时，清除监听器
+    return () => {
+      ipcRenderer.removeListener('copy-from-history', handleCopyFromHistory);
+    };
+
+  }, [clipboardHistory]);
 
 
-  
+
   useEffect(() => {
     const savedMaxLength = localStorage.getItem("maxHistoryLength");
     if (savedMaxLength) {
       setMaxHistoryLength(parseInt(savedMaxLength, 10));
     }
-  
+
     ipcRenderer.on('open-max-length-dialog', openMaxLengthDialog);
 
     // 清除监听器
@@ -68,12 +68,12 @@ useEffect(() => {
       ipcRenderer.removeListener('open-max-length-dialog', openMaxLengthDialog);
     };
   }, []);
-  
+
   useEffect(() => {
     const interval = setInterval(() => {
       const text = clipboard.readText();
       const trimmedText = text.trim(); // 用于检查的去除空白的临时变量
-  
+
       if (trimmedText) { // 检查去除空白后的text是否为空
         setClipboardHistory(prevHistory => {
           // 检查原始text是否已经存在于clipboardHistory中
@@ -89,10 +89,10 @@ useEffect(() => {
         });
       }
     }, 1000);
-  
+
     return () => clearInterval(interval);
   }, [clipboardHistory]);
-  
+
 
 
 
@@ -103,17 +103,21 @@ useEffect(() => {
     setTimeout(() => setCopiedIndex(null), 500); // 两秒后清除索引
   };
 
+  // 判断操作系统
+  const osShortcut = process.platform === 'darwin' ? 'Command+Shift+C' : 'Ctrl+Shift+C';
+
+
   return (
     <div className="flex flex-col h-full p-5 overflow-auto">
-      <div className="space-y-4">
+    {/* 剪贴板历史内容显示区域 */}
+    <div className="space-y-4">
         {clipboardHistory.map((item, index) => (
           <div 
             key={index} 
-            className="group relative p-4 bg-white rounded-lg border-2 border-stone-600 hover:border-transparent hover:shadow cursor-pointer"
+            className="group relative p-4 bg-white rounded-lg shadow cursor-pointer"
             onClick={() => copyToClipboard(item, index)}
           >
-            <p className="text-gray-800 line-clamp-3 group-hover:text-gray-400">{item}</p>
-            {/* 根据复制状态显示复制图标或复制成功图标 */}
+            <p className="text-gray-800 line-clamp-1 group-hover:text-gray-200">{item}</p>
             <span className="absolute top-1/2 right-4 transform -translate-y-1/2 opacity-0 group-hover:opacity-100">
               {copiedIndex === index ? (
                 <img src={checkImg} alt="Check" className="w-6 h-6" />
@@ -124,11 +128,16 @@ useEffect(() => {
           </div>
         ))}
       </div>
+      
+  {/* 固定在视图底部前面的快捷键提示信息 */}
+  <div className="text-center fixed bottom-0 left-0 right-0 p-4 bg-opacity-50 text-slate-300">
+        <p>Press <span className="font-bold">{osShortcut}</span> to open clipboard history.</p>
+      </div>
 
-<AppModal 
-  isOpen={showModal} 
-  onClose={() => setShowModal(false)} 
-/>
+      <AppModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+      />
 
     </div>
   );

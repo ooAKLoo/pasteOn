@@ -144,13 +144,6 @@ if (!globalShortcut.register('CommandOrControl+Shift+C', () => {
 })) {
     console.log('快捷键注册失败: CommandOrControl+Shift+C');
 }
-
-if (!globalShortcut.register('CommandOrControl+Shift+V', () => {
-    ipcMain.emit('show-history-window');
-    mainWindow.webContents.send('request-clipboard-history');
-})) {
-    console.log('快捷键注册失败: CommandOrControl+Shift+V');
-}
   });
 
 // 当所有窗口都关闭时退出
