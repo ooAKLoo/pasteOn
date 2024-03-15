@@ -126,7 +126,6 @@ ipcMain.on('send-clipboard-history', (event, clipboardHistory) => {
 ipcMain.on('copy-from-history', (event, text) => {
     clipboard.writeText(text);
     mainWindow.webContents.send('copy-from-history',text);
-    // 可选：显示一个通知，告知用户已复制到剪贴板
 });
   
 
@@ -137,7 +136,7 @@ app.whenReady().then(() => {
     createTray();
     
 // main.js
-// 注册 'CommandOrControl+Shift+C' 和 'CommandOrControl+Shift+V'
+// 注册 'CommandOrControl+Shift+C'
 if (!globalShortcut.register('CommandOrControl+Shift+C', () => {
     ipcMain.emit('show-history-window');
     mainWindow.webContents.send('request-clipboard-history');
@@ -148,14 +147,17 @@ if (!globalShortcut.register('CommandOrControl+Shift+C', () => {
 
 // 当所有窗口都关闭时退出
 app.on('window-all-closed', () => {
-    // 在 macOS 上，除非用户用 Cmd + Q 确定地退出，否则绝大部分应用及其菜单栏会保持激活。
     if (process.platform !== 'darwin') {
         app.quit();
     }
 });
 
+app.on('before-quit', () => {
+    tray.destroy();
+});
+
+
 app.on('activate', () => {
-    // 在macOS上，当点击dock图标并且没有其他窗口打开时，通常在应用程序中重新创建一个窗口。
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
     }
