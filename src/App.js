@@ -17,7 +17,7 @@ function App() {
     setShowModal(true);
   };
 
-
+  
   // App.js
   useEffect(() => {
     const handleRequestClipboardHistory = () => {

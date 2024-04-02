@@ -24,7 +24,7 @@
       
             height: 140px;
             /* 父元素高度 */
-            background: rgb(241 245 249);
+            background: #efefed;
             /* 半透明背景 */
             border-radius: 20px;
             /* 圆角 */
@@ -53,7 +53,7 @@
     </div>
 
     <script>
-        const { ipcRenderer } = require('electron');
+        const { ipcRenderer, clipboard } = require('electron');
         let clipboardHistory = [];
         let currentIndex = 0;
 
@@ -61,6 +61,21 @@
             clipboardHistory = history;
             currentIndex = clipboardHistory.length - 1; // 设置为最后一个元素
             displayItem(currentIndex);
+        });
+
+        // history.html内的renderer.js处理导航
+        ipcRenderer.on('navigate-history', (event, direction) => {
+            if (direction === 'up') {
+                // 向上移动
+                currentIndex = (currentIndex - 1 + clipboardHistory.length) % clipboardHistory.length;
+            } else {
+                // 向下移动
+                currentIndex = (currentIndex + 1) % clipboardHistory.length;
+            }
+            displayItem(currentIndex);
+            if (clipboardHistory.length > 0) {
+                ipcRenderer.send('copy-from-history', clipboardHistory[currentIndex]);
+            }
         });
 
         function displayItem(index) {
@@ -74,24 +89,11 @@
             }
         }
 
-        document.addEventListener('keydown', (event) => {
-            if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
-                if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
-                    currentIndex = (currentIndex + (event.key === 'ArrowUp' ? -1 : 1) + clipboardHistory.length) % clipboardHistory.length;
-                    displayItem(currentIndex);
-                }
-            }
+        document.addEventListener('dblclick', () => {
+            // 发送一个事件到主进程，要求隐藏 historyWindow
+            ipcRenderer.send('hide-history-window');
         });
 
-        document.addEventListener('keyup', (event) => {
-            if (event.key === 'Control' || event.key === 'Command' || event.key === 'Shift') {
-                // 松开快捷键时，复制当前选中的历史记录到剪贴板
-                if (clipboardHistory.length > 0) {
-                    ipcRenderer.send('copy-from-history', clipboardHistory[currentIndex]);
-                }
-                ipcRenderer.send('hide-history-window');
-            }
-        });
     </script>
 </body>
 
