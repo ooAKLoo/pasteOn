@@ -12,7 +12,7 @@ module.exports = function createWindow() {
             contextIsolation: true,
             enableRemoteModule: true
         },
-        icon: path.join(__dirname, '../public/assets/appIcon.png') // 图标路径
+        icon: path.join(__dirname, '../src/assets/appIcon.png') // 图标路径
     });
 
     // 并且为你的应用加载index.html
