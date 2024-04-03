@@ -9,6 +9,7 @@ module.exports = function createHistoryWindow() {
     historyWindow = new BrowserWindow({
         width: 500, // 窗口宽度
         height: 200, // 窗口高度
+        // opacity:0.5,
         x: (width - 500) / 2, // 居中位置
         y: 0, // 窗口的纵坐标
         alwaysOnTop: true, // 窗口置顶

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import copyImg from '../public/assets/copy.png';
-import checkImg from '../public/assets/check.png';
+import copyImg from '/assets/copy.png';
+import checkImg from '/assets/check.png';
 import AppModal from './AppModal';
-const { clipboard } = window.require('electron');
-const { ipcRenderer } = window.require('electron');
+const { clipboard, ipcRenderer } = window.electron;
+
 
 function App() {
   const [clipboardHistory, setClipboardHistory] = useState([]);
@@ -17,7 +17,7 @@ function App() {
     setShowModal(true);
   };
 
-  
+
   // App.js
   useEffect(() => {
     const handleRequestClipboardHistory = () => {
@@ -71,49 +71,62 @@ function App() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const text = clipboard.readText();
+      const text = window.electron.readClipboardText();
       const trimmedText = text.trim(); // 用于检查的去除空白的临时变量
-
-      if (trimmedText) { // 检查去除空白后的text是否为空
+  
+      if (trimmedText) {
         setClipboardHistory(prevHistory => {
-          // 检查原始text是否已经存在于clipboardHistory中
-          if (!prevHistory.includes(text)) {
-            let newHistory = [...prevHistory, text]; // 使用原始text
+          const textIndex = prevHistory.indexOf(text);
+          if (textIndex === -1) {
+            // 如果text不存在，添加到历史中，并且通过socket发送消息
+            let newHistory = [text, ...prevHistory]; // 先添加到数组开始
             if (newHistory.length > maxHistoryLength) {
-              newHistory.shift(); // 移除最旧的项
+              newHistory.pop(); // 移除最旧的项（现在是数组的末尾）
             }
+            
+            ipcRenderer.send('broadcast-clipboard', trimmedText); // 只在新条目添加时发送
+            
             return newHistory;
+          } else if (textIndex === 0) {
+            // 如果text已存在且已经在队首，不进行任何操作
+            return prevHistory;
           } else {
-            return prevHistory; // 如果text已存在，保持当前历史不变
+            // 如果text已存在，但不在队首，移动到队首
+            let updatedHistory = [...prevHistory];
+            updatedHistory.splice(textIndex, 1); // 先移除
+            updatedHistory.unshift(text); // 然后添加到数组开始
+            return updatedHistory;
           }
         });
       }
     }, 1000);
-
+  
     return () => clearInterval(interval);
   }, [clipboardHistory]);
+  
 
 
 
 
   // 复制文本到剪贴板的函数
   const copyToClipboard = (text, index) => {
-    clipboard.writeText(text);
+    window.electron.writeClipboardText(text); // 使用预加载脚本暴露的方法
     setCopiedIndex(index); // 设置复制的项索引
     setTimeout(() => setCopiedIndex(null), 500); // 两秒后清除索引
   };
 
   // 判断操作系统
-  const osShortcut = process.platform === 'darwin' ? 'Command+Shift+C' : 'Ctrl+Shift+C';
+  const osShortcut = window.electron.platform === 'darwin' ? 'Command+Shift+C' : 'Ctrl+Shift+C';
+
 
 
   return (
     <div className="flex flex-col h-full p-5 overflow-auto">
-    {/* 剪贴板历史内容显示区域 */}
-    <div className="space-y-4">
+      {/* 剪贴板历史内容显示区域 */}
+      <div className="space-y-4">
         {clipboardHistory.map((item, index) => (
-          <div 
-            key={index} 
+          <div
+            key={index}
             className="group relative p-4 bg-white rounded-lg shadow cursor-pointer"
             onClick={() => copyToClipboard(item, index)}
           >
@@ -128,9 +141,9 @@ function App() {
           </div>
         ))}
       </div>
-      
-  {/* 固定在视图底部前面的快捷键提示信息 */}
-  <div className="text-center fixed bottom-0 left-0 right-0 p-4 bg-opacity-50 text-slate-300">
+
+      {/* 固定在视图底部前面的快捷键提示信息 */}
+      <div className="text-center fixed bottom-0 left-0 right-0 p-4 bg-opacity-50 text-slate-300">
         <p>Press <span className="font-bold">{osShortcut}</span> to open clipboard history.</p>
       </div>
 

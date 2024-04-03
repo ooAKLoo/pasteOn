@@ -7,15 +7,20 @@ module.exports = function createWindow() {
         width: 800,
         height: 600,
         webPreferences: {
+            preload: path.join(__dirname, '../preload.js'),
             nodeIntegration: true,
-            contextIsolation: false,
+            contextIsolation: true,
             enableRemoteModule: true
         },
         icon: path.join(__dirname, '../public/assets/appIcon.png') // 图标路径
     });
 
     // 并且为你的应用加载index.html
-    mainWindow.loadFile(path.join(__dirname, '../index.html'));
+    const startURL = process.env.NODE_ENV === 'development'
+    ? 'http://localhost:5173' // Vite dev server
+    : `file://${path.join(__dirname, '../index.html')}`;
+
+    mainWindow.loadURL(startURL);
 
     // 当窗口关闭时隐藏而不是关闭
     mainWindow.on('close', function (event) {
@@ -26,7 +31,7 @@ module.exports = function createWindow() {
     });
 
     // // 打开开发者工具
-    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
 
     return mainWindow
 }

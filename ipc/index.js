@@ -1,6 +1,6 @@
 const { ipcMain, clipboard } = require('electron');
 
-module.exports = function setupIpcMainHandlers(mainWindow, historyWindow) {
+module.exports = function setupIpcMainHandlers(mainWindow, historyWindow,socket) {
     ipcMain.on('show-history-window', () => {
         if (historyWindow) {
             historyWindow.show();
@@ -20,11 +20,12 @@ module.exports = function setupIpcMainHandlers(mainWindow, historyWindow) {
     });
     
     
-    
     ipcMain.on('copy-from-history', (event, text) => {
+        console.log("234234234234-----------------")
         clipboard.writeText(text);
         mainWindow.webContents.send('copy-from-history', text);
     });
+    
     // main.js里处理上下导航事件
     ipcMain.on('navigate-history', (event, direction) => {
         // 发送消息到historyWindow以更新显示的项目
@@ -33,4 +34,11 @@ module.exports = function setupIpcMainHandlers(mainWindow, historyWindow) {
             historyWindow.webContents.send('navigate-history', direction);
         }
     });
+
+    ipcMain.on('broadcast-clipboard', (event, trimmedText) => {
+        // 假设socket已经在其他地方被初始化和连接
+        if (socket && socket.connected) {
+          socket.emit('clipboard-change', trimmedText);
+        }
+      });
 };

@@ -59,7 +59,7 @@
 
         ipcRenderer.on('display-clipboard-history', (event, history) => {
             clipboardHistory = history;
-            currentIndex = clipboardHistory.length - 1; // 设置为最后一个元素
+            currentIndex = 0; // 设置为最后一个元素
             displayItem(currentIndex);
         });
 
