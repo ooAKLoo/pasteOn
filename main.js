@@ -47,12 +47,12 @@ function setupSocket() {
 }
 
 function setupSocketListeners() {
-  socket.on('clipboard-change', (data) => {
-    console.log('Clipboard updated with:', data);
-    clipboard.writeText(data);
-  });
-  // 可以在这里添加其他 socket 事件监听器
-}
+    socket.on('clipboard-update', (data) => {
+      const timestamp = new Date().toISOString(); // 获取当前时间的ISO字符串
+      console.log(`[${timestamp}] Clipboard updated with:`, data);
+      clipboard.writeText(data);
+    });
+  }
 // Electron 完成初始化并准备创建浏览器窗口时，将调用此方法
 app.whenReady().then(() => {
     setupSocket().then(() => {
