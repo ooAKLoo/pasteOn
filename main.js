@@ -54,13 +54,18 @@ function setupSocket() {
 //   }
 
 function setupSocketListeners() {
+  // 移除旧的监听器，避免重复
+  socket.off('clipboard-update');
+
+  // 添加新的监听器
   socket.on('clipboard-update', (dataWithSenderIp) => {
-    const timestamp = new Date().toISOString(); // 获取当前时间的ISO字符串
+    const timestamp = new Date().toISOString();
     const { data, senderIp } = dataWithSenderIp;
     console.log(`[${timestamp}] Clipboard updated with:`, data, `from ${senderIp}`);
     mainWindow.webContents.send('ipc-clipboard-update', data);
   });
 }
+
 
 // Electron 完成初始化并准备创建浏览器窗口时，将调用此方法
 app.whenReady().then(() => {
