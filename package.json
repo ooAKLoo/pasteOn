@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "set NODE_ENV=development&& electron ."
+    "start": "cross-env NODE_ENV=development electron ."
   },
   "build": {
     "appId": "com.dongju.pasteOn",
