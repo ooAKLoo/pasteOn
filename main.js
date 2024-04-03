@@ -1,5 +1,4 @@
 const { app,BrowserWindow } = require('electron');
-const { clipboard } = require('electron');
 const { spawn } = require('child_process')
 const bonjour = require('bonjour')();
 const io = require('socket.io-client');
@@ -46,17 +45,23 @@ function setupSocket() {
   });
 }
 
-function setupSocketListeners() {
-    socket.on('clipboard-update', (data) => {
-      const timestamp = new Date().toISOString(); // 获取当前时间的ISO字符串
-      console.log(`[${timestamp}] Clipboard updated with:`, data);
-      console.log("mainWindow && !mainWindow.isDestroyed():",mainWindow && !mainWindow.isDestroyed())
-    // 在主进程中
-// mainWindow.webContents.send('clipboard-update', '要发送的一些文本');
+// function setupSocketListeners() {
+//     socket.on('clipboard-update', (data) => {
+//       const timestamp = new Date().toISOString(); // 获取当前时间的ISO字符串
+//       console.log(`[${timestamp}] Clipboard updated with:`, data);
+//       mainWindow.webContents.send('clipboard-update', data);
+//     });
+//   }
 
-        mainWindow.webContents.send('clipboard-update', data);
-    });
-  }
+function setupSocketListeners() {
+  socket.on('clipboard-update', (dataWithSenderIp) => {
+    const timestamp = new Date().toISOString(); // 获取当前时间的ISO字符串
+    const { data, senderIp } = dataWithSenderIp;
+    console.log(`[${timestamp}] Clipboard updated with:`, data, `from ${senderIp}`);
+    mainWindow.webContents.send('ipc-clipboard-update', data);
+  });
+}
+
 // Electron 完成初始化并准备创建浏览器窗口时，将调用此方法
 app.whenReady().then(() => {
     setupSocket().then(() => {

@@ -60,10 +60,10 @@ function App() {
       });
     };
 
-    ipcRenderer.on('clipboard-update', updateClipboardHistory);
+    ipcRenderer.on('ipc-clipboard-update', updateClipboardHistory);
 
     return () => {
-      ipcRenderer.removeAllListeners('clipboard-update');
+      ipcRenderer.removeAllListeners('ipc-clipboard-update');
     };
   }, [clipboardHistory, maxHistoryLength]);
 
