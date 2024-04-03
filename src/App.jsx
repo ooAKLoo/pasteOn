@@ -33,6 +33,42 @@ function App() {
     };
   }, [clipboardHistory]); // 添加 clipboardHistory 作为依赖
 
+  // 更新剪贴板历史和系统剪贴板的逻辑
+  // 从Electron主进程接收剪贴板更新
+  useEffect(() => {
+    const updateClipboardHistory = (data) => {
+      const trimmedText = data.trim();
+
+      setClipboardHistory(prevHistory => {
+        console.log("12434234------------------")
+        const textIndex = prevHistory.indexOf(trimmedText);
+        if (textIndex === -1) {
+          // 如果接收到的文本不存在于历史中，添加到历史并可能更新系统剪贴板
+          let newHistory = [trimmedText, ...prevHistory];
+          if (newHistory.length > maxHistoryLength) {
+            newHistory = newHistory.slice(0, maxHistoryLength); // 保留最新的条目
+          }
+          // 可选：更新系统剪贴板内容
+          window.electron.writeClipboardText(trimmedText);
+          return newHistory;
+        } else if (textIndex > 0) {
+          // 如果文本已存在但不在队首，移动到队首
+          let updatedHistory = [trimmedText, ...prevHistory.filter((_, index) => index !== textIndex)];
+          return updatedHistory;
+        }
+        // 如果文本已存在且已在队首，或其他情况，不更新
+        return prevHistory;
+      });
+    };
+
+    ipcRenderer.on('clipboard-update', updateClipboardHistory);
+
+    return () => {
+      ipcRenderer.removeAllListeners('clipboard-update');
+    };
+  }, [clipboardHistory, maxHistoryLength]);
+
+
 
   // App.js
   useEffect(() => {
@@ -73,7 +109,7 @@ function App() {
     const interval = setInterval(() => {
       const text = window.electron.readClipboardText();
       const trimmedText = text.trim(); // 用于检查的去除空白的临时变量
-  
+
       if (trimmedText) {
         setClipboardHistory(prevHistory => {
           const textIndex = prevHistory.indexOf(text);
@@ -83,9 +119,9 @@ function App() {
             if (newHistory.length > maxHistoryLength) {
               newHistory.pop(); // 移除最旧的项（现在是数组的末尾）
             }
-            
+
             ipcRenderer.send('broadcast-clipboard', trimmedText); // 只在新条目添加时发送
-            
+
             return newHistory;
           } else if (textIndex === 0) {
             // 如果text已存在且已经在队首，不进行任何操作
@@ -100,10 +136,10 @@ function App() {
         });
       }
     }, 1000);
-  
+
     return () => clearInterval(interval);
   }, [clipboardHistory]);
-  
+
 
 
 
