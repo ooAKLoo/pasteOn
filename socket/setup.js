@@ -29,30 +29,37 @@ function setupSocket(mainWindow) {
 
     setTimeout(() => {
       if (!socket) {
-          const serverExecutablePath = path.join(process.resourcesPath, 'server', 'server');
-          const serverProcess = spawn(serverExecutablePath, [], { stdio: 'inherit' });
 
-          serverProcess.on('close', (code) => {
-            if (code !== 0) {
-              mainWindow.webContents.send('connection-status', `本地服务器启动失败。退出码: ${code}`);
-              reject(new Error(`本地服务器启动失败。退出码: ${code}`));
-            }
+        let serverExecutablePath = path.join(process.resourcesPath, 'server', 'server');
+
+        // 如果是开发环境，使用不同的路径或文件名
+        if (process.env.NODE_ENV === 'development') {
+          serverExecutablePath = path.join(__dirname, '..', 'server', 'server');
+        }
+        // const serverExecutablePath = path.join(process.resourcesPath, 'server', 'server');
+        const serverProcess = spawn(serverExecutablePath, [], { stdio: 'inherit' });
+
+        serverProcess.on('close', (code) => {
+          if (code !== 0) {
+            mainWindow.webContents.send('connection-status', `本地服务器启动失败。退出码: ${code}`);
+            reject(new Error(`本地服务器启动失败。退出码: ${code}`));
+          }
+        });
+
+        setTimeout(() => {
+          socket = io('http://localhost:3000');
+
+          socket.on('connect', () => {
+            mainWindow.webContents.send('connection-status', '连接到服务器成功');
+            setupSocketListeners(socket, mainWindow);
+            resolve(socket);
           });
-          
-          setTimeout(() => {
-            socket = io('http://localhost:3000');
 
-            socket.on('connect', () => {
-              mainWindow.webContents.send('connection-status', '连接到服务器成功');
-              setupSocketListeners(socket, mainWindow);
-              resolve(socket);
-            });
-
-            socket.on('connect_error', (error) => {
-              mainWindow.webContents.send('connection-status', `连接到服务器失败: ${error.message}`); // 将错误信息发送到渲染器进程
-              reject(error);
-            });
-          }, 1000);
+          socket.on('connect_error', (error) => {
+            mainWindow.webContents.send('connection-status', `连接到服务器失败: ${error.message}`); // 将错误信息发送到渲染器进程
+            reject(error);
+          });
+        }, 1000);
 
       }
     }, 5000);

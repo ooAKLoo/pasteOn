@@ -32,7 +32,6 @@ module.exports = function setupIpcMainHandlers(mainWindow, historyWindow, socket
     });
 
     ipcMain.on('broadcast-clipboard', (event, trimmedText) => {
-        console.log("'broadcast-clipboard'")
         if (socket && socket.connected) {
             socket.emit('clipboard-change', trimmedText);
         }
