@@ -95,4 +95,11 @@ git push origin v<版本号>
 - 打包macOS应用通常需要在macOS系统上进行，以满足Apple的签名要求。
 - 确保您的`package.json`中已正确配置了`electron-builder`，包括应用ID、图标等。
 
+## 转载说明和商业用途限制
+
+本项目的文档和代码采用[GNU Affero General Public License v3.0](https://www.gnu.org/licenses/agpl-3.0.en.html)授权发布。任何人都可以按照AGPL v3的条款来使用和分发本项目的代码，但是必须同样以AGPL v3的条款来分发修改后的版本，并且必须明确标注原作者和来源。
+
+**禁止商业用途**：未经原作者书面同意，不得将本项目的内容和代码用于商业目的。对于希望使用本项目内容或代码的商业实体，请直接联系项目维护者以获取授权。
+
+
 ---
