@@ -9,16 +9,8 @@ io.on('connection', (socket) => {
     const clientIp = socket.request.connection.remoteAddress; // 获取客户端IP地址
     console.log(`A user connected from ${clientIp}`);
   
-    // socket.on('clipboard-change', (data) => {
-    //   console.log(`Clipboard data received from ${clientIp}:`, data);
-    //   socket.broadcast.emit('clipboard-update', data);
-    // });
-
     socket.on('clipboard-change', (data) => {
-      console.log(`Clipboard data received from ${clientIp}:`, data);
-      // 在广播的数据中包含发送者的IP地址
-      const dataWithSenderIp = { data, senderIp: clientIp };
-      socket.broadcast.emit('clipboard-update', dataWithSenderIp);
+      socket.broadcast.emit('clipboard-update', data);
     });
   
     socket.on('disconnect', () => {

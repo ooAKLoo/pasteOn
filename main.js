@@ -45,24 +45,14 @@ function setupSocket() {
   });
 }
 
-// function setupSocketListeners() {
-//     socket.on('clipboard-update', (data) => {
-//       const timestamp = new Date().toISOString(); // 获取当前时间的ISO字符串
-//       console.log(`[${timestamp}] Clipboard updated with:`, data);
-//       mainWindow.webContents.send('clipboard-update', data);
-//     });
-//   }
 
 function setupSocketListeners() {
   // 移除旧的监听器，避免重复
   socket.off('clipboard-update');
 
   // 添加新的监听器
-  socket.on('clipboard-update', (dataWithSenderIp) => {
-    const timestamp = new Date().toISOString();
-    const { data, senderIp } = dataWithSenderIp;
-    console.log(`[${timestamp}] Clipboard updated with:`, data, `from ${senderIp}`);
-    mainWindow.webContents.send('ipc-clipboard-update', data);
+  socket.on('clipboard-update', (data) => {
+    mainWindow.webContents.send('clipboard-update', data);
   });
 }
 

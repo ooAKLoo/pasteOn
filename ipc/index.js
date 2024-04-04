@@ -21,7 +21,6 @@ module.exports = function setupIpcMainHandlers(mainWindow, historyWindow,socket)
     
     
     ipcMain.on('copy-from-history', (event, text) => {
-        console.log("234234234234-----------------")
         clipboard.writeText(text);
         mainWindow.webContents.send('copy-from-history', text);
     });
@@ -37,8 +36,6 @@ module.exports = function setupIpcMainHandlers(mainWindow, historyWindow,socket)
 
     ipcMain.on('broadcast-clipboard', (event, trimmedText) => {
         if (socket && socket.connected) {
-          const timestamp = new Date().toISOString(); // 获取当前时间的ISO字符串
-          console.log(`[${timestamp}] apply for broadcast-clipboard:`, trimmedText);
           socket.emit('clipboard-change', trimmedText);
         }
       });

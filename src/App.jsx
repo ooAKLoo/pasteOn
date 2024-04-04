@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import copyImg from '/assets/copy.png';
 import checkImg from '/assets/check.png';
 import AppModal from './AppModal';
@@ -14,62 +14,56 @@ function App() {
 
   // 定义回调函数
   const openMaxLengthDialog = () => {
-    console.log('add open-max-length-dialog 监听器');
     setShowModal(true);
   };
 
 
-// 在组件内
-const clipboardHistoryRef = useRef(clipboardHistory);
+  // 在组件内
+  const clipboardHistoryRef = useRef(clipboardHistory);
 
-// 当 clipboardHistory 更新时，同步更新 ref 的值
-useEffect(() => {
-  clipboardHistoryRef.current = clipboardHistory;
-}, [clipboardHistory]);
+  // 当 clipboardHistory 更新时，同步更新 ref 的值
+  useEffect(() => {
+    clipboardHistoryRef.current = clipboardHistory;
+  }, [clipboardHistory]);
 
-useEffect(() => {
-  const handleRequestClipboardHistory = () => {
-    console.log('添加 request-clipboard-history 监听器');
-    // 使用 clipboardHistoryRef.current 来获取最新的 clipboardHistory
-    ipcRenderer.send('send-clipboard-history', clipboardHistoryRef.current);
-  };
+  useEffect(() => {
+    const handleRequestClipboardHistory = () => {
+      // 使用 clipboardHistoryRef.current 来获取最新的 clipboardHistory
+      ipcRenderer.send('send-clipboard-history', clipboardHistoryRef.current);
+    };
 
-  // 监听来自 main.js 的请求
-  ipcRenderer.on('request-clipboard-history', handleRequestClipboardHistory);
+    // 监听来自 main.js 的请求
+    ipcRenderer.on('request-clipboard-history', handleRequestClipboardHistory);
 
-  // 清除监听器
-  return () => {
-    console.log('移除 request-clipboard-history 监听器');
-    ipcRenderer.removeListener('request-clipboard-history', handleRequestClipboardHistory);
-  };
-  // 这里我们不再将 clipboardHistory 作为依赖，所以监听器不会因状态更新而重新创建
-}, []); // 注意这里的依赖数组是空的
+    // 清除监听器
+    return () => {
+      ipcRenderer.removeListener('request-clipboard-history', handleRequestClipboardHistory);
+    };
+    // 这里我们不再将 clipboardHistory 作为依赖，所以监听器不会因状态更新而重新创建
+  }, []); // 注意这里的依赖数组是空的
 
-useEffect(() => {
-  const handleCopyFromHistory = (event, text) => {
-    console.log('添加 copy-from-history 监听器');
-    if (clipboardHistoryRef.current.includes(text)) {
-      const updatedHistory = clipboardHistoryRef.current.filter(item => item !== text);
-      updatedHistory.push(text); // 将选中的文本移动到数组末尾
-      setClipboardHistory(updatedHistory); // 更新状态
-    }
-  };
+  useEffect(() => {
+    const handleCopyFromHistory = (event, text) => {
+      if (clipboardHistoryRef.current.includes(text)) {
+        const updatedHistory = clipboardHistoryRef.current.filter(item => item !== text);
+        updatedHistory.push(text); // 将选中的文本移动到数组末尾
+        setClipboardHistory(updatedHistory); // 更新状态
+      }
+    };
 
-  ipcRenderer.on('copy-from-history', handleCopyFromHistory);
+    ipcRenderer.on('copy-from-history', handleCopyFromHistory);
 
-  // 在组件卸载时，清除监听器
-  return () => {
-    console.log('移除 copy-from-history 监听器');
-    ipcRenderer.removeListener('copy-from-history', handleCopyFromHistory);
-  };
-  // 同样，这里的依赖数组也是空的
-}, []); // 注意这里的依赖数组是空的
+    // 在组件卸载时，清除监听器
+    return () => {
+      ipcRenderer.removeListener('copy-from-history', handleCopyFromHistory);
+    };
+    // 同样，这里的依赖数组也是空的
+  }, []); // 注意这里的依赖数组是空的
 
   // 更新剪贴板历史和系统剪贴板的逻辑
   // 从Electron主进程接收剪贴板更新
   useEffect(() => {
     const updateClipboardHistory = (data) => {
-      console.log('添加 ipc-clipboard-update 监听器');
       setClipboardHistory(prevHistory => {
         const textIndex = prevHistory.indexOf(data);
         if (textIndex === -1) {
@@ -95,7 +89,6 @@ useEffect(() => {
     ipcRenderer.on('ipc-clipboard-update', updateClipboardHistory);
 
     return () => {
-      console.log('移除 ipc-clipboard-update 监听器');
       ipcRenderer.removeAllListeners('ipc-clipboard-update');
     };
   }, [clipboardHistory, maxHistoryLength]);
@@ -111,7 +104,6 @@ useEffect(() => {
 
     // 清除监听器
     return () => {
-      console.log('remoe open-max-length-dialog 监听器');
       ipcRenderer.removeListener('open-max-length-dialog', openMaxLengthDialog);
     };
   }, []);
@@ -151,10 +143,6 @@ useEffect(() => {
 
     return () => clearInterval(interval);
   }, [clipboardHistory]);
-
-
-
-
 
   // 复制文本到剪贴板的函数
   const copyToClipboard = (text, index) => {
