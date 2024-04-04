@@ -35,7 +35,10 @@ module.exports = function setupIpcMainHandlers(mainWindow, historyWindow,socket)
     });
 
     ipcMain.on('broadcast-clipboard', (event, trimmedText) => {
+        console.log("'broadcast-clipboard'")
         if (socket && socket.connected) {
+            const timestamp = new Date().toISOString(); // 获取当前时间的ISO字符串
+            console.log(`[${timestamp}] apply for broadcast-clipboard:`, trimmedText);
           socket.emit('clipboard-change', trimmedText);
         }
       });

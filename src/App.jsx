@@ -2,16 +2,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import copyImg from '/assets/copy.png';
 import checkImg from '/assets/check.png';
 import AppModal from './AppModal';
+import LoadingSpinner from './modfier/LoadingSpinner';
 const { ipcRenderer } = window.electron;
 
 
 function App() {
+  const [connectionStatus, setConnectionStatus] = useState('连接状态未知');
+
   const [clipboardHistory, setClipboardHistory] = useState([]);
   const [copiedIndex, setCopiedIndex] = useState(null);
 
   const [showModal, setShowModal] = useState(false);
   const [maxHistoryLength, setMaxHistoryLength] = useState(5); // 默认最大长度
 
+  const [showConnectionStatus, setShowConnectionStatus] = useState(true);
   // 定义回调函数
   const openMaxLengthDialog = () => {
     setShowModal(true);
@@ -154,7 +158,26 @@ function App() {
   // 判断操作系统
   const osShortcut = window.electron.platform === 'darwin' ? 'Command+Shift+C' : 'Ctrl+Shift+C';
 
+  // 监听connection-status事件
+  useEffect(() => {
+    const handleConnectionStatusUpdate = (status) => {
+      setConnectionStatus(status);
+      if (status === '连接到服务器成功' || status === '连接到服务器失败') {
+        setTimeout(() => {
+          setShowConnectionStatus(false);
+        }, 500); 
+      }
+    };
 
+    ipcRenderer.on('connection-status', handleConnectionStatusUpdate);
+
+    // 组件卸载时，移除监听器
+    return () => {
+      ipcRenderer.removeListener('connection-status', handleConnectionStatusUpdate);
+    };
+  }, []);
+  useEffect(() => {
+  }, [connectionStatus]);
 
   return (
     <div className="flex flex-col h-full p-5 overflow-auto">
@@ -180,7 +203,16 @@ function App() {
 
       {/* 固定在视图底部前面的快捷键提示信息 */}
       <div className="text-center fixed bottom-0 left-0 right-0 p-4 bg-opacity-50 text-slate-300">
-        <p>Press <span className="font-bold">{osShortcut}</span> to open clipboard history.</p>
+        {showConnectionStatus ? (
+          <div className="flex flex-row justify-center p-5 rounded-lg bg-slate-200 text-gray-500 gap-4 font-bold ease-out transition-opacity duration-500">
+            {connectionStatus}
+            <LoadingSpinner />
+          </div>
+        ) : (
+          <>
+            <p>Press <span className="font-bold">{osShortcut}</span> to open clipboard history.</p>
+          </>)
+        }
       </div>
 
       <AppModal

@@ -31,7 +31,7 @@ module.exports = function createWindow() {
     });
 
     // // 打开开发者工具
-    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
 
     return mainWindow
 }

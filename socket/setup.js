@@ -1,42 +1,70 @@
+// setupSocket.js
+const { spawn } = require('child_process')
 const bonjour = require('bonjour')();
 const io = require('socket.io-client');
+let socket;
 
-function setupSocket() {
-    return new Promise((resolve, reject) => {
-      const browser = bonjour.find({ type: 'http' }, (service) => {
-        if (service.name === 'My Socket') {
-          const url = `http://${service.referer.address}:${service.port}`;
-          console.log(`Connecting to ${url}`);
-          socket = io(url);
-  
-          // 在这里调用 setupSocketListeners()
-          setupSocketListeners();
-          resolve();
-        }
-      });
-  
-      setTimeout(() => {
-        if (!socket || !socket.connected) {
-          console.log('No server found, starting own server...');
-          const serverProcess = spawn('node', ['server.js'], { stdio: 'inherit' });
-          serverProcess.on('close', (code) => {
-            console.log(`server.js process exited with code ${code}`);
+function setupSocket(mainWindow) {
+  return new Promise((resolve, reject) => {
+    const browser = bonjour.find({ type: 'http' }, (service) => {
+      mainWindow.webContents.send('connection-status', '服务器配置中...');
+      if (service.name === 'My Socket') {
+        const url = `http://${service.referer.address}:${service.port}`;
+        socket = io(url);
+
+        socket.on('connect', () => {
+          mainWindow.webContents.send('connection-status', '连接到服务器成功');
+          setupSocketListeners(socket, mainWindow);
+          resolve(socket);
+        });
+
+        socket.on('connect_error', () => {
+          mainWindow.webContents.send('connection-status', '连接到服务器失败');
+          reject(new Error('连接到服务器失败'));
+        });
+      }
+    });
+
+    setTimeout(() => {
+      if (!socket) {
+        const serverProcess = spawn('node', [`${__dirname}/server.js`], { stdio: 'inherit' });
+
+        serverProcess.on('close', (code) => {
+          if (code !== 0) {
+            reject(new Error('本地服务器启动失败。'));
+          }
+        });
+
+        setTimeout(() => {
+          socket = io('http://localhost:3000');
+
+          socket.on('connect', () => {
+            mainWindow.webContents.send('connection-status', '连接到服务器成功');
+            setupSocketListeners(socket, mainWindow);
+            resolve(socket);
           });
-  
-          setTimeout(() => {
-            socket = io('http://localhost:3000');
-            setupSocketListeners();
-            resolve();
-          }, 1000); // 假设服务端启动需要一定时间
-        }
-      }, 5000); // 等待5秒以检查服务端是否存在
-    });
-  }
-  
-  function setupSocketListeners() {
-    socket.on('clipboard-change', (data) => {
-      console.log('Clipboard updated with:', data);
-      clipboard.writeText(data);
-    });
-    // 可以在这里添加其他 socket 事件监听器
-  }
+
+          socket.on('connect_error', () => {
+            mainWindow.webContents.send('connection-status', '连接到服务器失败');
+            reject(new Error('连接到服务器失败'));
+          });
+        }, 1000); // 假设服务端启动需要一定时间
+      }
+    }, 5000); // 等待5秒以检查服务端是否存在
+  });
+}
+
+
+
+function setupSocketListeners(socket,mainWindow) {
+  // 移除旧的监听器，避免重复
+  socket.off('clipboard-update');
+
+  // 添加新的监听器
+  socket.on('clipboard-update', (data) => {
+    mainWindow.webContents.send('ipc-clipboard-update', data);
+  });
+}
+
+
+module.exports = { setupSocket };
