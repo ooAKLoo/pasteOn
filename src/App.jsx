@@ -16,76 +16,62 @@ function App() {
   const [maxHistoryLength, setMaxHistoryLength] = useState(5); // 默认最大长度
 
   const [showConnectionStatus, setShowConnectionStatus] = useState(true);
-  // 定义回调函数
+
   const openMaxLengthDialog = () => {
     setShowModal(true);
   };
 
-
-  // 在组件内
   const clipboardHistoryRef = useRef(clipboardHistory);
 
-  // 当 clipboardHistory 更新时，同步更新 ref 的值
   useEffect(() => {
     clipboardHistoryRef.current = clipboardHistory;
   }, [clipboardHistory]);
 
   useEffect(() => {
     const handleRequestClipboardHistory = () => {
-      // 使用 clipboardHistoryRef.current 来获取最新的 clipboardHistory
       ipcRenderer.send('send-clipboard-history', clipboardHistoryRef.current);
     };
 
-    // 监听来自 main.js 的请求
     ipcRenderer.on('request-clipboard-history', handleRequestClipboardHistory);
 
-    // 清除监听器
     return () => {
       ipcRenderer.removeListener('request-clipboard-history', handleRequestClipboardHistory);
     };
-    // 这里我们不再将 clipboardHistory 作为依赖，所以监听器不会因状态更新而重新创建
-  }, []); // 注意这里的依赖数组是空的
+  }, []);
 
   useEffect(() => {
     const handleCopyFromHistory = (event, text) => {
       if (clipboardHistoryRef.current.includes(text)) {
         const updatedHistory = clipboardHistoryRef.current.filter(item => item !== text);
-        updatedHistory.push(text); // 将选中的文本移动到数组末尾
-        setClipboardHistory(updatedHistory); // 更新状态
+        updatedHistory.push(text);
+        setClipboardHistory(updatedHistory);
       }
     };
 
     ipcRenderer.on('copy-from-history', handleCopyFromHistory);
 
-    // 在组件卸载时，清除监听器
     return () => {
       ipcRenderer.removeListener('copy-from-history', handleCopyFromHistory);
     };
-    // 同样，这里的依赖数组也是空的
-  }, []); // 注意这里的依赖数组是空的
+  }, []);
 
-  // 更新剪贴板历史和系统剪贴板的逻辑
   // 从Electron主进程接收剪贴板更新
   useEffect(() => {
     const updateClipboardHistory = (data) => {
       setClipboardHistory(prevHistory => {
         const textIndex = prevHistory.indexOf(data);
         if (textIndex === -1) {
-          // 如果接收到的文本不存在于历史中，添加到历史并可能更新系统剪贴板
           let newHistory = [data, ...prevHistory];
           if (newHistory.length > maxHistoryLength) {
-            newHistory = newHistory.slice(0, maxHistoryLength); // 保留最新的条目
+            newHistory = newHistory.slice(0, maxHistoryLength);
           }
-          // 可选：更新系统剪贴板内容
           window.electron.writeClipboardText(data);
           return newHistory;
         } else if (textIndex > 0) {
-          // 如果文本已存在但不在队首，移动到队首
           let updatedHistory = [data, ...prevHistory.filter((_, index) => index !== textIndex)];
           window.electron.writeClipboardText(data);
           return updatedHistory;
         }
-        // 如果文本已存在且已在队首，或其他情况，不更新
         return prevHistory;
       });
     };
@@ -106,7 +92,6 @@ function App() {
 
     ipcRenderer.on('open-max-length-dialog', openMaxLengthDialog);
 
-    // 清除监听器
     return () => {
       ipcRenderer.removeListener('open-max-length-dialog', openMaxLengthDialog);
     };
@@ -115,30 +100,27 @@ function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       const text = window.electron.readClipboardText();
-      const trimmedText = text.trim(); // 用于检查的去除空白的临时变量
+      const trimmedText = text.trim();
 
       if (trimmedText) {
         setClipboardHistory(prevHistory => {
           const textIndex = prevHistory.indexOf(text);
           if (textIndex === -1) {
-            // 如果text不存在，添加到历史中，并且通过socket发送消息
-            let newHistory = [text, ...prevHistory]; // 先添加到数组开始
+            let newHistory = [text, ...prevHistory];
             if (newHistory.length > maxHistoryLength) {
-              newHistory.pop(); // 移除最旧的项（现在是数组的末尾）
+              newHistory.pop();
             }
 
-            ipcRenderer.send('broadcast-clipboard', text); // 只在新条目添加时发送
+            ipcRenderer.send('broadcast-clipboard', text);
 
             return newHistory;
           } else if (textIndex === 0) {
-            // 如果text已存在且已经在队首，不进行任何操作
             return prevHistory;
           } else {
-            // 如果text已存在，但不在队首，移动到队首
             let updatedHistory = [...prevHistory];
-            updatedHistory.splice(textIndex, 1); // 先移除
-            updatedHistory.unshift(text); // 然后添加到数组开始
-            ipcRenderer.send('broadcast-clipboard', text); // 只在新条目添加时发送
+            updatedHistory.splice(textIndex, 1);
+            updatedHistory.unshift(text);
+            ipcRenderer.send('broadcast-clipboard', text);
             return updatedHistory;
           }
         });
@@ -148,11 +130,10 @@ function App() {
     return () => clearInterval(interval);
   }, [clipboardHistory]);
 
-  // 复制文本到剪贴板的函数
   const copyToClipboard = (text, index) => {
-    window.electron.writeClipboardText(text); // 使用预加载脚本暴露的方法
-    setCopiedIndex(index); // 设置复制的项索引
-    setTimeout(() => setCopiedIndex(null), 500); // 两秒后清除索引
+    window.electron.writeClipboardText(text);
+    setCopiedIndex(index);
+    setTimeout(() => setCopiedIndex(null), 500);
   };
 
   // 判断操作系统
@@ -165,7 +146,7 @@ function App() {
       if (status === '连接到服务器成功' || status === '连接到服务器失败') {
         setTimeout(() => {
           setShowConnectionStatus(false);
-        }, 500); 
+        }, 500);
       }
     };
 
