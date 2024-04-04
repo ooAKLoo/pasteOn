@@ -1,70 +1,80 @@
-基于您提供的项目信息，以下是一个适用于您的 Electron 应用 `pasteOn` 的 README 文件模板，其中包含了安装、运行、构建和打包等命令的说明：
 
-```markdown
-# pasteOn
+---
 
-pasteOn 是一个 Electron 应用，用于管理剪贴板历史。
+# 打包Electron应用指南
 
-## 安装
+本指南介绍了如何为Windows和macOS平台打包Electron应用的步骤。
 
-在克隆或下载此项目后，运行以下命令以安装依赖：
+## 准备工作
 
-```bash
-npm install
-```
+确保您的开发环境已经安装了Node.js、npm以及所有项目依赖。特别是，项目应该已经添加了`electron`和`electron-builder`。
 
-这将安装所有必要的依赖项。
+## 打包步骤
 
-## 开发
+### 1. 构建前端资源
 
-要在开发模式下运行此应用，请使用：
+如果您的项目中包含前端资源（如使用React、Vue等），首先需要构建这些资源：
 
 ```bash
-npm run dev
+npm run build
 ```
 
-这将启动 `webpack` 以观察文件更改并自动重新编译。
+这将根据您的项目配置（如Vite、Webpack等）构建项目，并生成用于打包的静态资源(本项目在vite中配置的build输出dist文件夹)。
 
-## 运行应用
+### 2. 打包应用
 
-要启动 Electron 应用，请运行：
+使用`electron-builder`打包您的应用。您可以选择针对所有平台打包，或者仅针对特定平台：
 
-```bash
-npm start
-```
-
-这将启动 `electron` 并加载应用的主窗口。
-
-## 打包应用
-
-要打包应用以在不同的平台上运行，请使用以下命令：
-
-- 打包为当前平台的可执行文件：
-
-  ```bash
-  npm run pack
-  ```
-
-- 打包并创建适用于多个平台（macOS、Windows、Linux）的安装程序：
+- **为所有平台打包**
 
   ```bash
   npm run dist
   ```
 
-这些命令将在 `dist/` 文件夹中生成相应的安装程序和打包文件。
+- **仅为Windows打包**
+
+  ```bash
+  npm run dist -- -w
+  ```
+
+- **仅为macOS打包**
+
+  ```bash
+  npm run dist -- -m
+  ```
+
+### 3. 测试未打包的应用（可选）
+
+使用`pack`命令可以生成未打包的版本，这对于快速测试应用而不创建完整的安装程序很有用：
+
+```bash
+npm run pack
+```
+
+这将在`dist`文件夹中生成应用的未打包版本。
+
+## 发布应用
+
+在`dist`文件夹准备好之后，您可以选择将安装程序压缩后上传到GitHub Releases或其他软件发布平台。通常，您只需要上传：
+
+- 对于Windows：`.exe`安装程序及相关的更新元数据文件（如`latest.yml`）。
+- 对于macOS：`.dmg`或`.pkg`安装包及相关的更新元数据文件。
+
+## 版本控制和标签
+
+为每个发布的版本打上Git标签，使用应用的版本号作为标签名：
+
+```bash
+git tag -a v<版本号> -m "Release <版本号>"
+git push origin v<版本号>
+```
+
+将压缩包上传到GitHub Releases、npm或其他软件发布平台。如果是GitHub，你可以在创建新Release时，将此ZIP包作为资产附件上传。
 
 ## 注意事项
 
-- 确保在打包应用之前设置正确的应用图标。
-- 在将应用部署到生产环境之前，请确保进行充分测试。
+- 打包macOS应用通常需要在macOS系统上进行，以满足Apple的签名要求。
+- 确保您的`package.json`中已正确配置了`electron-builder`，包括应用ID、图标等。
 
-## 许可证
-
-此项目使用 ISC 许可证。
-
-## 关键字
-
-- Electron
-- 剪贴板管理
-- 跨平台应用
-```
+---
+ asar extract app.asar ./
