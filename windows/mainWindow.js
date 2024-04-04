@@ -12,15 +12,21 @@ module.exports = function createWindow() {
             contextIsolation: true,
             enableRemoteModule: true
         },
-        icon: path.join(__dirname, '../src/assets/appIcon.png') // 图标路径
+        icon:  'disk/assets/appIcon.png'// 图标路径
     });
 
-    // 并且为你的应用加载index.html
-    const startURL = process.env.NODE_ENV === 'development'
-    ? 'http://localhost:5173' // Vite dev server
-    : `file://${path.join(__dirname, '../index.html')}`;
+    // 为应用加载index.html
+    const isDev = process.env.NODE_ENV === 'development';
+    const startURL = isDev
+        ? 'http://localhost:5173' // Vite dev server URL
+        : "dist/index.html"; // 生产模式下的文件路径
 
-    mainWindow.loadURL(startURL);
+    if (isDev) {
+        mainWindow.loadURL(startURL);
+    } else {
+        mainWindow.loadFile(startURL);
+    }
+
 
     // 当窗口关闭时隐藏而不是关闭
     mainWindow.on('close', function (event) {

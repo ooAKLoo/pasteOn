@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import copyImg from '/assets/copy.png';
-import checkImg from '/assets/check.png';
+import copyImg from './assets/copy.png';
+import checkImg from './assets/check.png';
 import AppModal from './AppModal';
 import LoadingSpinner from './modfier/LoadingSpinner';
 const { ipcRenderer } = window.electron;

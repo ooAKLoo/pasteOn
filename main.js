@@ -22,7 +22,10 @@ app.whenReady().then(() => {
       setupGlobalShortcuts(historyWindow, mainWindow);
       createMenu(mainWindow);
       createTrayIcon(mainWindow);
-    });
+    }).catch((error) => {
+      // 错误处理逻辑
+      console.error(error);
+    });;
   });
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

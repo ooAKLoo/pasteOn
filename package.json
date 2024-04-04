@@ -1,21 +1,52 @@
 {
   "name": "pasteOn",
-  "version": "1.0.0",
-  "description": "",
+  "version": "24.04.04",
+  "description": "Dooong",
   "main": "main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "cross-env NODE_ENV=development electron ."
+    "start": "cross-env NODE_ENV=development electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "postbuild": "shx cp history.html dist/history.html",
+    "build-server": "node build-server.js"
   },
   "build": {
     "appId": "com.dongju.pasteOn",
     "mac": {
-      "icon": "build/icons/macAppIcon.png"
+      "icon": "dist/icons/macAppIcon.png"
     },
     "win": {
-      "icon": "build/icons/icon.ico"
-    }
+      "target": "nsis",
+      "icon": "dist/icons/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false, 
+      "allowToChangeInstallationDirectory": true
+    },
+    "files": [
+      "./dist/**/*",
+      "./package.json",
+      "main.js",
+      "./preload.js",
+      "./ipc/**/*",
+      "./shortcuts/**/*",
+      "./socket/**/*",
+      "./windows/**/*",
+      "./others/**/*",
+      "!socket/server.js"
+    ],
+    "extraResources": [
+      {
+        "from": "./server/",
+        "to": "server"
+      },
+      {
+        "from": "./public/assets",
+        "to": "assets"
+      }
+    ]
   },
   "keywords": [],
   "author": "",
@@ -35,11 +66,12 @@
     "cross-env": "^7.0.3",
     "css-loader": "^6.8.1",
     "electron": "^28.1.0",
-    "electron-builder": "^24.9.1",
+    "electron-builder": "^24.13.3",
     "electron-is-dev": "^2.0.0",
     "file-loader": "^6.2.0",
     "postcss": "^8.4.32",
     "postcss-loader": "^7.3.4",
+    "shx": "^0.3.4",
     "style-loader": "^3.3.3",
     "tailwindcss": "^3.4.0",
     "vite": "^5.2.7",

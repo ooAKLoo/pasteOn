@@ -24,7 +24,8 @@ module.exports = function createHistoryWindow() {
         show: false // 初始不显示
     });
 
-    historyWindow.loadFile(path.join(__dirname, '../history.html'));
+    // historyWindow.loadFile(path.join(__dirname, '../history.html'));
+    historyWindow.loadFile('dist/history.html');
 
     historyWindow.on('closed', () => {
         historyWindow = null;

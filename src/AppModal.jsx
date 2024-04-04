@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Modal from 'react-modal';
-import checkImg from '../public/assets/check.png';
+import checkImg from './assets/check.png';
 import './tailwind.css';
 
 Modal.setAppElement("#root");
