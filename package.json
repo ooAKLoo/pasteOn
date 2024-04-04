@@ -10,7 +10,8 @@
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "postbuild": "shx cp history.html dist/history.html",
-    "build-server": "node build-server.js"
+    "build-server": "node build-server.js",
+    "build-all": "npm run build && npm run postbuild && npm run build-server && npm run dist"
   },
   "build": {
     "appId": "com.dongju.pasteOn",
