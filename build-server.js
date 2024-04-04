@@ -8,14 +8,13 @@ const platformMap = {
   linux: "linux-x64"
 };
 
-console.log("hsdaufisudf-----------")
 const currentPlatform = platformMap[process.platform];
 if (!currentPlatform) {
   console.error(`Unsupported platform: ${process.platform}`);
   process.exit(1);
 }
 
-const outputFileName = `server-${currentPlatform}`;
+const outputFileName = `server`;
 const outputPath = path.join(__dirname, 'server', outputFileName);
 
 // 检查是否已经存在可执行文件

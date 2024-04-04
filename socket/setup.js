@@ -10,7 +10,7 @@ function setupSocket(mainWindow) {
   return new Promise((resolve, reject) => {
     const browser = bonjour.find({ type: 'http' }, (service) => {
       mainWindow.webContents.send('connection-status', '服务器配置中...');
-      if (service.name === 'My Socket') {
+      if (service.name === 'My pasteOn') {
         const url = `http://${service.referer.address}:${service.port}`;
         socket = io(url);
 
@@ -47,7 +47,7 @@ function setupSocket(mainWindow) {
         });
 
         setTimeout(() => {
-          socket = io('http://localhost:3000');
+          socket = io('http://localhost:43515');
 
           socket.on('connect', () => {
             mainWindow.webContents.send('connection-status', '连接到服务器成功');

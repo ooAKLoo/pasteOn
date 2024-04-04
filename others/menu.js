@@ -1,11 +1,14 @@
-const { Menu } = require('electron');
+const { app, Menu } = require('electron');
 
 module.exports = function createMenu(mainWindow) {
     const template = [
         {
             label: 'File',
             submenu: [
-                { label: 'Exit', role: 'quit' }
+                { label: 'Exit', click: () => {
+                    app.isQuitting = true;
+                    app.quit();
+                } }
             ]
         },
         {

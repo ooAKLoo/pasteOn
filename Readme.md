@@ -58,7 +58,15 @@ npm run pack
 在`dist`文件夹准备好之后，您可以选择将安装程序压缩后上传到GitHub Releases或其他软件发布平台。通常，您只需要上传：
 
 - 对于Windows：`.exe`安装程序及相关的更新元数据文件（如`latest.yml`）。
-- 对于macOS：`.dmg`或`.pkg`安装包及相关的更新元数据文件。
+- 对于macOS：`.dmg`或`.zip`安装包及相关的更新元数据文件。
+
+pasteOn-24.4.4.dmg：这是一个磁盘映像文件，通常用于分发macOS应用程序。用户下载后可以挂载这个磁盘映像，然后将应用程序拖动到他们的应用程序文件夹中。这是向最终用户分发macOS应用程序的常用方法。
+
+pasteOn-24.4.4-mac.zip：这是一个压缩文件，包含了应用程序。一些分发渠道可能更喜欢使用ZIP文件，因为它们可以被直接解压缩，而不需要像DMG文件那样被挂载。
+
+另外，icons目录下的图标文件（icon.icns、icon.ico、macAppIcon.png）是为了支持不同的操作系统而准备的应用图标。这些文件在打包过程中已经被使用，通常不需要单独分发给用户。
+
+最后，assets目录包含的资源可能是你的应用在运行时需要的静态文件。这些文件应该已经包含在你的应用程序包（pasteOn.app）中了，所以无需单独分发。
 
 ## 版本控制和标签
 
@@ -71,10 +79,20 @@ git push origin v<版本号>
 
 将压缩包上传到GitHub Releases、npm或其他软件发布平台。如果是GitHub，你可以在创建新Release时，将此ZIP包作为资产附件上传。
 
+## 其他常用命令
+
+```bash
+ asar extract app.asar ./
+
+(base) yangdongju@localhost pasteOn % export PATH="$(npm config get prefix)/bin:$PATH"
+(base) yangdongju@localhost pasteOn %  pkg --version        
+5.8.1
+(base) yangdongju@localhost pasteOn % npm run build-server
+```
+
 ## 注意事项
 
 - 打包macOS应用通常需要在macOS系统上进行，以满足Apple的签名要求。
 - 确保您的`package.json`中已正确配置了`electron-builder`，包括应用ID、图标等。
 
 ---
- asar extract app.asar ./

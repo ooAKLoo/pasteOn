@@ -18,9 +18,9 @@ io.on('connection', (socket) => {
     });
   });
 
-const PORT = 3000;
+const PORT = 43515;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   // 广播 Socket.IO 服务
-  bonjour.publish({ name: 'My Socket.IO Service', type: 'http', port: PORT });
+  bonjour.publish({ name: 'My pasteOn.IO Service', type: 'http', port: PORT });
 });
