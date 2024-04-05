@@ -1,5 +1,6 @@
 
 ---
+简体中文 | [English](./Readme.en.md)
 
 # 打包Electron应用指南
 
