@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+// hook/useKeyboardShortcuts.js
+import { useState,useEffect } from 'react';
 import { globalShortcut } from '@tauri-apps/api';
 
-// Custom hook for managing keyboard shortcuts
-export function useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex) {
+export function useKeyboardShortcuts(isVisible, setIsVisible,setIndex, adjustIndex, copyToClipboard) {
+    const [shouldChange,setShouldChange] = useState(false);
     useEffect(() => {
         registerVisibilityToggle();
         return () => {
@@ -14,7 +15,13 @@ export function useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex) {
     function registerVisibilityToggle() {
         globalShortcut.register('Control+Shift+A', () => {
             console.log('Global shortcut Control+Shift+A was pressed!');
-            setIsVisible(prev => !prev);
+            setIsVisible(prev => {
+                if (!prev) {
+                    setIndex(0);
+                }   
+                return !prev;
+            });
+            setShouldChange(prev => !prev);
         });
     }
 
@@ -27,13 +34,18 @@ export function useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex) {
 
         // Clean up
         return () => unregisterArrows();
-    }, [isVisible]);
-
+    }, [shouldChange]);
 
     const registerArrows = async () => {
-        await globalShortcut.register('Up', () => adjustIndex(-1));
+        await globalShortcut.register('Up', () => {
+            adjustIndex(-1);
+            copyToClipboard();
+        });
         console.log('Up arrow shortcut registered.');
-        await globalShortcut.register('Down', () => adjustIndex(1));
+        await globalShortcut.register('Down', () => {
+            adjustIndex(1);
+            copyToClipboard();
+        });
         console.log('Down arrow shortcut registered.');
     };
 
