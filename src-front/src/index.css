@@ -1,0 +1,16 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+
+/* App.css 或其他全局样式文件 */
+.modalInput::-webkit-inner-spin-button,
+.modalInput::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* index.css 或者其他全局样式文件 */
+.draggable {
+  -webkit-app-region: drag;
+}
