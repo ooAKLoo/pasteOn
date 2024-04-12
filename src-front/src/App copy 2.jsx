@@ -1,7 +1,5 @@
-"不切换窗口的显示和隐藏，只控制窗口内容的显示还是隐藏，同时忽略鼠标事件。"
 import React, { useState, useEffect } from 'react';
 import { globalShortcut } from '@tauri-apps/api';
-import { appWindow } from '@tauri-apps/api/window'; // 引入appWindow
 
 function App() {
   const [isVisible, setIsVisible] = useState(true); // 控制可见性的状态
@@ -9,11 +7,7 @@ function App() {
   useEffect(() => {
     // 监听 isVisible 状态的变化
     console.log('Visibility changed:', isVisible);
-    // 设置鼠标事件忽略状态，并打印 Promise 结果
-    appWindow.setIgnoreCursorEvents(isVisible)
-      .then(() => console.log(`Cursor events are now ${isVisible ? 'processed' : 'ignored'}.`))
-      .catch(error => console.error('Failed to set cursor events:', error));
-  }, [isVisible]); // 当 isVisible 改变时触发
+  }, [isVisible]); // 依赖项数组中加入 isVisible，只有当 isVisible 改变时才触发
 
   useEffect(() => {
     // 注册快捷键
@@ -46,7 +40,7 @@ function App() {
   }
 
   return (
-    <div data-tauri-drag-region className={`flex flex-col items-center justify-center h-screen ${isVisible ? 'opacity-0 pointer-events-none' : 'bg-red-400'} transition-opacity ease-in-out duration-500 rounded-3xl`}>
+    <div data-tauri-drag-region className={`flex flex-col items-center justify-center h-screen ${isVisible ? ' opacity-0 pointer-events-none' : 'bg-red-400'} transition-opacity ease-in-out duration-500 rounded-3xl`}>
       <h1 className="text-4xl font-bold">
         Hello, Tauri!
       </h1>

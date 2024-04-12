@@ -12,11 +12,15 @@
     "allowlist": {
       "all": false,
       "window": {
-        "startDragging": true
+        "startDragging": true,
+        "setIgnoreCursorEvents": true
       },
       "shell": {
         "all": false,
         "open": true
+      },
+      "globalShortcut": {
+        "all": true
       }
     },
     "windows": [
@@ -27,7 +31,8 @@
         "decorations": false,
         "resizable": false,
         "transparent": true,
-        "alwaysOnTop": true
+        "alwaysOnTop": true,
+        "focus":false
       }
     ],
     "security": {
