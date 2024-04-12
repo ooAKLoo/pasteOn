@@ -1,55 +1,67 @@
-// function App() {
-//   return (
-//     <div data-tauri-drag-region className="flex items-center justify-center h-screen bg-red-400 rounded-3xl">
-//       <h1 className="text-4xl font-bold">Hello, Tauri!</h1>
-//     </div>
-//   );
-// }
+import React, { useState, useEffect } from 'react';
+import { globalShortcut } from '@tauri-apps/api';
+import { appWindow } from '@tauri-apps/api/window';
 
-// export default App;
-import React, { useEffect } from 'react';
-import { invoke, globalShortcut } from '@tauri-apps/api';
+// NumberDisplay Component (View)
+const NumberDisplay = ({ number }) => (
+  <div className="text-4xl font-bold">{number}</div>
+);
 
+// App Component (Controller)
 function App() {
+  const [isVisible, setIsVisible] = useState(true);
+  const [index, setIndex] = useState(0);
+  const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
   useEffect(() => {
-    // 注册快捷键
-    const registerShortcut = async () => {
-      const success = await globalShortcut.register('Control+Shift+A', () => {
-        console.log('Global shortcut Control+Shift+A was pressed!');
-        toggleWindowVisibility();
-      });
-      if (success) {
-        console.log('Shortcut registered successfully');
-      } else {
-        console.log('Failed to register shortcut');
-      }
-    };
+    console.log('Visibility changed:', isVisible);
+    appWindow.setIgnoreCursorEvents(!isVisible)
+      .then(() => console.log(`Cursor events are now ${isVisible ? 'ignored' : 'processed'}.`))
+      .catch(error => console.error('Failed to set cursor events:', error));
 
-    // 注销快捷键
-    const unregisterShortcut = async () => {
-      await globalShortcut.unregister('Control+Shift+A');
-      console.log('Shortcut unregistered');
-    };
+    setupArrowKeys(isVisible);
+  }, [isVisible]);
 
-    registerShortcut();
+  useEffect(() => {
+    registerVisibilityToggle();
     return () => {
-      unregisterShortcut();
+      globalShortcut.unregister('Control+Shift+A');
+      console.log('Control+Shift+A shortcut unregistered');
     };
   }, []);
 
-  function toggleWindowVisibility() {
-    invoke('toggle_window_visibility');
+  function registerVisibilityToggle() {
+    globalShortcut.register('Control+Shift+A', () => {
+      console.log('Global shortcut Control+Shift+A was pressed!');
+      setIsVisible(prev => !prev);
+    });
+  }
+
+  function setupArrowKeys(active) {
+    if (active) {
+      registerArrows();
+    } else {
+      unregisterArrows();
+    }
+  }
+
+  const registerArrows = async () => {
+    await globalShortcut.register('Up', () => adjustIndex(-1));
+    await globalShortcut.register('Down', () => adjustIndex(1));
+  };
+
+  const unregisterArrows = async () => {
+    await globalShortcut.unregister('Up');
+    await globalShortcut.unregister('Down');
+  };
+
+  function adjustIndex(direction) {
+    setIndex(prevIndex => (prevIndex + direction + numbers.length) % numbers.length);
   }
 
   return (
-    <div data-tauri-drag-region className="flex flex-col items-center justify-center h-screen bg-red-400 rounded-3xl">
-      <h1 className="text-4xl font-bold">Hello, Tauri!</h1>
-      <button 
-        className="mt-4 px-4 py-2 bg-blue-500 text-white font-bold rounded hover:bg-blue-700"
-        onClick={toggleWindowVisibility}
-      >
-        Toggle Window Visibility
-      </button>
+    <div data-tauri-drag-region className={`flex flex-col items-center justify-center h-screen ${isVisible ? 'bg-blue-400' : 'opacity-0 pointer-events-none'} transition-opacity ease-in-out duration-500 rounded-3xl`}>
+      <NumberDisplay number={numbers[index]} />
     </div>
   );
 }
