@@ -10,7 +10,33 @@
     margin: 0;
 }
 
-/* index.css 或者其他全局样式文件 */
-.draggable {
-  -webkit-app-region: drag;
+@layer utilities {
+  /* Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+}
+
+input[type="color"] {
+  border-radius: 5px;
+  padding: 0;
+  border: 5px solid #fdfdfd;
+}
+
+input[type="color"]::-moz-color-swatch {
+  border: none;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 4em;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
 }
