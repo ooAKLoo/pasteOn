@@ -5,7 +5,8 @@ use warp::ws::{WebSocket, Message};
 use futures::SinkExt;  // 导入 SinkExt 以获得 send 方法
 use chrono::prelude::*;
 
-pub async fn start_websocket_server(clients: Clients)  -> Result<(), warp::Error>{
+pub async fn start_websocket_server2(clients: Clients)  -> Result<(), warp::Error>{
+    println!("Starting WebSocket server");
     // 为 warp 过滤器创建一个克隆的 Arc 引用
     let clients_filter = warp::any().map(move || Arc::clone(&clients));
 
@@ -19,6 +20,22 @@ pub async fn start_websocket_server(clients: Clients)  -> Result<(), warp::Error
 
     // 启动 warp 服务
     println!("Starting WebSocket server on ws://3030/ws");
+    warp::serve(routes).run(([0, 0, 0, 0], 3030)).await;
+    Ok(())
+}
+pub async fn start_websocket_server(clients: Clients) -> Result<(), warp::Error>{
+    
+    println!("Starting WebSocket server");
+    let clients_filter = warp::any().map(move || Arc::clone(&clients));
+
+    let routes = warp::path("ws")  // 确保路径是 'ws'
+        .and(warp::ws())
+        .and(clients_filter)
+        .map(|ws: warp::ws::Ws, clients: Clients| {
+            ws.on_upgrade(move |socket| handle_connection(socket, clients))
+        });
+
+    println!("Starting WebSocket server on ws://localhost:3030/ws");
     warp::serve(routes).run(([0, 0, 0, 0], 3030)).await;
     Ok(())
 }
