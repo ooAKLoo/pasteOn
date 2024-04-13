@@ -1,55 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import ItemsManager from './models/itemsManager';
 import { useKeyboardShortcuts } from './hook/useKeyboardShortcuts';
 import { useClipboard } from './hook/useClipboard';
 import { appWindow } from '@tauri-apps/api/window';
 
 function App() {
   const [isVisible, setIsVisible] = useState(true);
-  const [items, setItems] = useState(["1", "2", "3"]);  // Initial content
   const { writeToClipboard, readFromClipboard } = useClipboard();
   const MAX_LENGTH = 5;  // Define the maximum length of the items array
 
-  const adjustIndex = (direction) => {
-    setItems(currentItems => {
-      console.log(` Direction: ${direction} Items: ${currentItems}`);
-      const newIndex = (direction + currentItems.length) % currentItems.length;
-      console.log(`New index: ${newIndex}`);
-      const newItems = rotateArray(currentItems, newIndex);
-      writeToClipboard(newItems[0]); // Update clipboard with the new first item
-      return newItems;
-    });
-  };
-
-  // Rotate the array so that the element at 'newIndex' is moved to the front
-  const rotateArray = (array, newIndex) => {
-    if (newIndex === 0) return array; // No rotation needed if the new index is already 0
-    return [...array.slice(newIndex), ...array.slice(0, newIndex)];
-  };
-
-  useEffect(() => {
-    const intervalId = setInterval(async () => {
-      const text = await readFromClipboard();
-      const trimmedText = text.trim();
-      if (trimmedText) {
-        setItems(prevItems => {
-          const existingIndex = prevItems.indexOf(text);
-          let newItems = [...prevItems];
-          if (existingIndex !== -1) {
-            // 如果元素已经存在于数组中，则将其移动到数组首位
-            newItems.splice(existingIndex, 1);  // 先从当前位置删除
-          }
-          newItems.unshift(text);  // 不管是否存在，都添加到数组首位
-          if (newItems.length > MAX_LENGTH) {
-            newItems = newItems.slice(0, MAX_LENGTH);  // 维护数组的最大长度
-          }
-          return newItems;
-        });
-      }
-    }, 1000);
-
-    return () => clearInterval(intervalId);
-  }, []);
-
+  const { items, adjustIndex } = ItemsManager({ isVisible, setIsVisible, writeToClipboard, readFromClipboard, MAX_LENGTH });
 
   useEffect(() => {
     appWindow.setIgnoreCursorEvents(!isVisible)
