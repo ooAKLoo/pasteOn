@@ -1,29 +1,20 @@
-// hook/useKeyboardShortcuts.js
-import { useState,useEffect } from 'react';
+import { useEffect } from 'react';
 import { globalShortcut } from '@tauri-apps/api';
 
-export function useKeyboardShortcuts(isVisible, setIsVisible,setIndex, adjustIndex, copyToClipboard) {
-    const [shouldChange,setShouldChange] = useState(false);
+export function useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex, copyToClipboard) {
     useEffect(() => {
-        registerVisibilityToggle();
+        const toggleVisibility = () => {
+            console.log('Global shortcut Control+Shift+A was pressed!');
+            setIsVisible(prev => !prev);
+        };
+
+        globalShortcut.register('Control+Shift+A', toggleVisibility).catch(console.error);
+
         return () => {
-            globalShortcut.unregister('Control+Shift+A');
+            globalShortcut.unregister('Control+Shift+A').catch(console.error);
             console.log('Control+Shift+A shortcut unregistered');
         };
     }, []);
-
-    function registerVisibilityToggle() {
-        globalShortcut.register('Control+Shift+A', () => {
-            console.log('Global shortcut Control+Shift+A was pressed!');
-            setIsVisible(prev => {
-                if (!prev) {
-                    setIndex(0);
-                }   
-                return !prev;
-            });
-            setShouldChange(prev => !prev);
-        });
-    }
 
     useEffect(() => {
         if (isVisible) {
@@ -31,10 +22,7 @@ export function useKeyboardShortcuts(isVisible, setIsVisible,setIndex, adjustInd
         } else {
             unregisterArrows();
         }
-
-        // Clean up
-        return () => unregisterArrows();
-    }, [shouldChange]);
+    }, [isVisible]); // Only run this effect when isVisible changes
 
     const registerArrows = async () => {
         await globalShortcut.register('Up', () => {
