@@ -38,6 +38,7 @@
         "focus":false
       }
     ],
+    "macOSPrivateApi": true,
     "security": {
       "csp": null
     },
