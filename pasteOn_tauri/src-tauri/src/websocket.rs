@@ -1,7 +1,9 @@
 use crate::state::Clients;
 use warp::Filter;
-use warp::ws::WebSocket;
 use std::sync::Arc;
+use warp::ws::{WebSocket, Message};
+use futures::SinkExt;  // 导入 SinkExt 以获得 send 方法
+use chrono::prelude::*;
 
 pub async fn start_websocket_server(clients: Clients)  -> Result<(), warp::Error>{
     // 为 warp 过滤器创建一个克隆的 Arc 引用
@@ -16,11 +18,22 @@ pub async fn start_websocket_server(clients: Clients)  -> Result<(), warp::Error
         });
 
     // 启动 warp 服务
+    println!("Starting WebSocket server on ws://3030/ws");
     warp::serve(routes).run(([0, 0, 0, 0], 3030)).await;
     Ok(())
 }
 
+
 // 处理 WebSocket 连接的异步函数
-async fn handle_connection(socket: WebSocket, clients: Clients) {
-    // ...处理 WebSocket 连接的逻辑
+async fn handle_connection(mut socket: WebSocket, clients: Clients) {
+    println!("New WebSocket connection");
+    let now = Utc::now();
+    let welcome_msg = format!("Welcome! Current time: {}", now.to_rfc3339());
+
+    // 尝试发送欢迎消息
+    if let Err(e) = socket.send(Message::text(welcome_msg)).await {
+        eprintln!("Error sending welcome message: {:?}", e);
+    }
+
+    // 在这里添加其他处理逻辑，例如监听更多消息或处理业务逻辑
 }

@@ -1,5 +1,5 @@
 use mdns_sd::{ServiceDaemon, ServiceEvent,ServiceInfo};
-use local_ip_address::local_ip;
+use get_if_addrs::get_if_addrs;
 use std::thread;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -46,16 +46,24 @@ pub fn start_mdns_query() {
 pub fn register_mdns_service() {
     let mdns = ServiceDaemon::new().expect("Failed to create daemon");
         // 动态获取IP地址
-        let my_local_ip = local_ip().unwrap();
-        println!("my_local_ip Local IP address: {}", my_local_ip);
+        let ip = get_if_addrs().ok().and_then(|addrs|
+            addrs.into_iter()
+                 .find(|addr| !addr.is_loopback() && addr.ip().is_ipv4())
+                 .map(|addr| addr.ip().to_string())
+        ).expect("Failed to get local IP address");
+        println!("Local IP address: {}", ip);
 
+        // List all of the machine's network interfaces
+for iface in get_if_addrs::get_if_addrs().unwrap() {
+    println!("{:#?}", iface);
+}
         let properties = [("property_1", "test"), ("property_2", "1234")];
     // 注册WebSocket服务
     let websocket_service_info = ServiceInfo::new(
         "_ws._tcp.local.",
         "Example WebSocket Service",
         "example.local.",
-        &my_local_ip,
+        &ip,
         3030,
         &properties[..],
     ).expect("Failed to create WebSocket service info");
