@@ -10,13 +10,6 @@ type Clients = Arc<Mutex<HashMap<String, WebSocket>>>;
 
 #[tokio::main]
 async fn main() {
-     // 启动 Tauri 应用程序
-     let tauri_app = async {
-        tauri::Builder::default()
-            .run(tauri::generate_context!())
-            .expect("error while running tauri application");
-    };
-
     // 创建全局客户端存储
     let clients: Clients = Arc::new(Mutex::new(HashMap::new()));
     // 为 warp 过滤器创建一个克隆的 Arc 引用
@@ -46,7 +39,6 @@ async fn main() {
     // 同时运行 warp 服务和 mDNS 服务
     tokio::join!(
         async move { warp_service.await },
-        tauri_app,
         // ...这里添加 mDNS 服务发现的逻辑
     );
 }
