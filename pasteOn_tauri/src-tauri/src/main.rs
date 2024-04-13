@@ -1,57 +1,25 @@
-use libmdns::Responder;
-use std::collections::HashMap; // 导入 HashMap
+mod app;
+mod websocket;
+mod mdns;
+mod state;
+
+use state::Clients;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use warp::Filter;
-use warp::ws::WebSocket;
-
-// 定义 Clients 类型
-type Clients = Arc<Mutex<HashMap<String, WebSocket>>>;
 
 #[tokio::main]
 async fn main() {
-     // 启动 Tauri 应用程序
-     let tauri_app = async {
-        tauri::Builder::default()
-            .run(tauri::generate_context!())
-            .expect("error while running tauri application");
-    };
+    let clients: Clients = Arc::new(Mutex::new(std::collections::HashMap::new()));
 
-    // 创建全局客户端存储
-    let clients: Clients = Arc::new(Mutex::new(HashMap::new()));
-    // 为 warp 过滤器创建一个克隆的 Arc 引用
-    let clients_filter = warp::any().map(move || Arc::clone(&clients));
+    // 启动 Tauri 应用程序
+    let tauri_app = app::start_tauri_app();
 
-    // 设置 warp 路由，以处理 WebSocket 连接
-    let routes = warp::path("ws")
-        .and(warp::ws())
-        .and(clients_filter)
-        .map(|ws: warp::ws::Ws, clients: Clients| {
-            ws.on_upgrade(move |socket| handle_connection(socket, clients))
-        });
+   // 同步启动 mDNS 服务查询和注册
+   mdns::start_mdns_query();
+   mdns::register_mdns_service();
 
-    // 启动 warp 服务
-    let warp_service = warp::serve(routes).run(([0, 0, 0, 0], 3030));
-
-    // 创建 mDNS 响应器
-    let responder = Arc::new(Responder::new().unwrap());
-    // 注册 mDNS 服务
-    let _service = responder.register(
-        "_pasteon._tcp".to_owned(),
-        "PasteOn Service".to_owned(),
-        3030,
-        &[] // 空的 TXT 记录
-    );
-
-    // 同时运行 warp 服务和 mDNS 服务
+    // 同时运行所有服务
     tokio::join!(
-        async move { warp_service.await },
-        tauri_app,
-        // ...这里添加 mDNS 服务发现的逻辑
+        tauri_app, // 注意这里没有分号
     );
-}
-
-// 处理 WebSocket 连接的异步函数
-async fn handle_connection(socket: WebSocket, clients: Clients) {
-    // ...这里添加处理 WebSocket 连接的逻辑
 }

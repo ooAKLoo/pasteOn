@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { SwatchesPicker } from 'react-color';
 import length from '../assets/lengthImg.svg'
 import rollback from '../assets/rollbackImg.svg'
 import shortcut from '../assets/shortCutImg.svg'
