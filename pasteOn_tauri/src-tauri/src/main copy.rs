@@ -6,30 +6,38 @@ mod state;
 use state::Clients;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use crate::websocket::start_websocket_server;
+use crate::websocket::{start_websocket_server};
+use crate::mdns::{start_mdns_query, register_mdns_service};
+use crate::app::start_tauri_app;
+use std::thread;
+use tokio::sync::oneshot;
 
 #[tokio::main]
 async fn main() {
     let clients: Clients = Arc::new(Mutex::new(std::collections::HashMap::new()));
 
-    // 启动 Tauri 应用程序
-    let tauri_app = app::start_tauri_app();
+    // 启动WebSocket服务器和mDNS服务的异步任务
+    let websocket_server = tokio::spawn(async move {
+        start_websocket_server(clients.clone()).await
+    });
 
-     // 同步启动 mDNS 服务查询和注册
-     mdns::start_mdns_query();
+    let mdns_service = tokio::spawn(async {
+        let (tx_mdns, rx_mdns) = oneshot::channel();
+        thread::spawn(move || {
+            start_mdns_query(tx_mdns);
+        });
 
+        // 等待mDNS查询结果
+        if rx_mdns.await.is_err() {
+            register_mdns_service();
+        }
+    });
 
-    // 启动 WebSocket 服务器
-    let websocket_server = start_websocket_server(clients.clone());
+    // 等待后台服务完成启动
+    //let _ = tokio::join!(websocket_server, mdns_service);
 
-    // 同时运行所有服务，并处理可能的错误
-    let (tauri_result, websocket_result) = tokio::join!(tauri_app, websocket_server);
-
-    if let Err(e) = tauri_result {
-        eprintln!("Error running Tauri app: {:?}", e);
-    }
-
-    if let Err(e) = websocket_result {
-        eprintln!("Error running WebSocket server: {:?}", e);
-    }
+    // 主线程启动Tauri应用程序
+    println!("Starting Tauri application");
+    start_tauri_app(); // 这里直接在主线程上调用
 }
+

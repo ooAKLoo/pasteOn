@@ -3,8 +3,9 @@ use local_ip_address::local_ip;
 use std::thread;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use tokio::sync::oneshot;
 
-pub fn start_mdns_query() {
+pub fn start_mdns_query(sender: oneshot::Sender<()>) {
     let mdns = ServiceDaemon::new().expect("Failed to create daemon");
     let service_type = "_ws._tcp.local.";  // 专注于WebSocket服务
     let receiver = mdns.browse(service_type).expect("Failed to browse");
@@ -32,8 +33,8 @@ pub fn start_mdns_query() {
     println!("Service discovery status: {}", if was_service_found { "Found" } else { "Not Found" });
 
     if !was_service_found {
-        println!("No service found, registering the service...");
-        register_mdns_service();
+        println!("No service found, allowing WebSocket server to start...");
+        sender.send(()).expect("Failed to send start signal");
     }
 
     mdns.shutdown().unwrap();
