@@ -33,6 +33,11 @@ pub fn start_mdns_query() {
     let was_service_found = *service_found.lock().unwrap();
     println!("Service discovery status: {}", if was_service_found { "Found" } else { "Not Found" });
 
+    if !was_service_found {
+        println!("No service found, registering the service...");
+        register_mdns_service();
+    }
+    
     mdns.shutdown().unwrap();
 }
 

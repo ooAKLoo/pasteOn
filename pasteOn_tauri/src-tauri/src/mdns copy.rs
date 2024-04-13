@@ -1,4 +1,4 @@
-use mdns_sd::{ServiceDaemon, ServiceEvent,ServiceInfo};
+use mdns_sd::{ServiceDaemon, ServiceEvent, ServiceInfo};
 use std::thread;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -9,10 +9,9 @@ pub fn start_mdns_query() {
     let service_type = "_http._tcp.local.";
     let receiver = mdns.browse(service_type).expect("Failed to browse");
 
-    // 使用 Arc 和 Mutex 包装一个 bool 值来跟踪服务是否被发现
     let service_found = Arc::new(Mutex::new(false));
-
     let service_found_thread = service_found.clone();
+
     thread::spawn(move || {
         while let Ok(event) = receiver.recv() {
             match event {
@@ -28,14 +27,17 @@ pub fn start_mdns_query() {
         }
     });
 
-    // 等待一段时间以接收服务发现事件
     thread::sleep(Duration::from_secs(5));
     let was_service_found = *service_found.lock().unwrap();
     println!("Service discovery status: {}", if was_service_found { "Found" } else { "Not Found" });
 
+    if !was_service_found {
+        println!("No service found, registering the service...");
+        register_mdns_service();
+    }
+
     mdns.shutdown().unwrap();
 }
-
 
 pub fn register_mdns_service() {
     let mdns = ServiceDaemon::new().expect("Failed to create daemon");
@@ -57,6 +59,7 @@ pub fn register_mdns_service() {
     ).expect("Failed to create service info");
 
     mdns.register(service_info).expect("Failed to register service");
+    println!("Service registered successfully.");
 
     // 保持服务运行一段时间
     thread::sleep(Duration::from_secs(5));
