@@ -13,7 +13,8 @@
       "all": false,
       "window": {
         "startDragging": true,
-        "setIgnoreCursorEvents": true
+        "setIgnoreCursorEvents": true,
+        "setSize": true
       },
       "shell": {
         "all": false,
