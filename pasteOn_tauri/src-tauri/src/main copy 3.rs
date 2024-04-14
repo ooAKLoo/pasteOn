@@ -14,14 +14,13 @@ use client::connect_and_listen_to_websocket;
 use std::thread;
 use tokio::sync::oneshot;
 use tokio::runtime::Runtime;
-use std::collections::HashMap;
 
 #[tokio::main]
 async fn main() {
-    let clients: Clients = Arc::new(Mutex::new(HashMap::new()));
+    let clients: Clients = Arc::new(Mutex::new(std::collections::HashMap::new()));
 
+    // 创建一个通道，用于同步服务器和客户端的启动
     let (tx, rx) = oneshot::channel::<bool>();
-    let clients_clone = clients.clone();
 
     let mdns_service = tokio::spawn(async move {
         let (tx_mdns, rx_mdns) = oneshot::channel();
@@ -31,25 +30,21 @@ async fn main() {
 
         if rx_mdns.await.is_ok() {
             // Start WebSocket server in a new thread
-
             thread::spawn(move || {
                 let rt = Runtime::new().unwrap();
                 rt.block_on(async {
-                    if start_websocket_server(clients_clone, tx).await.is_ok() {
-                        println!("WebSocket server started successfully.");
-                    }
+                    let server_result = start_websocket_server(clients).await;
+                    // Signal the main thread about the server start
+                    let _ = tx.send(server_result.is_ok());
                 });
             });
-        
-            // 等待接收到服务器启动的信号
+
+            // Wait for the server start confirmation
             if rx.await.unwrap() {
-                println!("WebSocket server setup complete.");
-                // Start WebSocket client after server is confirmed to be started
-                connect_and_listen_to_websocket().await;
+                println!("WebSocket server started successfully.");
             } else {
                 println!("Failed to start WebSocket server.");
             }
-        
         }
         println!("WebSocket server started successfully.");
         // mDNS查询失败或服务未找到，启动WebSocket客户端
@@ -61,7 +56,8 @@ async fn main() {
 
         // client.await.unwrap();
     });
-    // 继续执行其他任务
+
     println!("Starting Tauri application");
-    start_tauri_app(); 
+    start_tauri_app();
+    mdns_service.await.unwrap();
 }

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>WebSocket Test Client</title>
+<script>
+  function connect() {
+    const ws = new WebSocket('ws://192.168.1.134:3030/ws');
+    ws.onopen = function() {
+      console.log('Connected');
+      ws.send('Hello Server!');
+    };
+    ws.onmessage = function(event) {
+      console.log('Received: ' + event.data);
+    };
+    ws.onclose = function() {
+      console.log('Disconnected');
+    };
+  }
+</script>
+</head>
+<body>
+<button onclick="connect()">Connect WebSocket</button>
+</body>
+</html>

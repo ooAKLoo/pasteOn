@@ -4,39 +4,23 @@ use std::sync::Arc;
 use warp::ws::{WebSocket, Message};
 use futures::SinkExt;  // 导入 SinkExt 以获得 send 方法
 use chrono::prelude::*;
+use tokio::sync::oneshot;
+use tokio::sync::Mutex;
+use std::collections::HashMap;
 
-pub async fn start_websocket_server2(clients: Clients)  -> Result<(), warp::Error>{
-    println!("Starting WebSocket server");
-    // 为 warp 过滤器创建一个克隆的 Arc 引用
+pub async fn start_websocket_server(clients: Arc<Mutex<HashMap<String, WebSocket>>>, tx: oneshot::Sender<bool>) -> Result<(), warp::Error> {
     let clients_filter = warp::any().map(move || Arc::clone(&clients));
 
-    // 设置 warp 路由，以处理 WebSocket 连接
     let routes = warp::path("ws")
         .and(warp::ws())
         .and(clients_filter)
-        .map(|ws: warp::ws::Ws, clients: Clients| {
-            ws.on_upgrade(move |socket| handle_connection(socket, clients))
-        });
-
-    // 启动 warp 服务
-    println!("Starting WebSocket server on ws://3030/ws");
-    warp::serve(routes).run(([0, 0, 0, 0], 3030)).await;
-    Ok(())
-}
-pub async fn start_websocket_server(clients: Clients) -> Result<(), warp::Error>{
-    
-    println!("Starting WebSocket server");
-    let clients_filter = warp::any().map(move || Arc::clone(&clients));
-
-    let routes = warp::path("ws")  // 确保路径是 'ws'
-        .and(warp::ws())
-        .and(clients_filter)
-        .map(|ws: warp::ws::Ws, clients: Clients| {
+        .map(|ws: warp::ws::Ws, clients: Arc<Mutex<HashMap<String, WebSocket>>>| {
             ws.on_upgrade(move |socket| handle_connection(socket, clients))
         });
 
     println!("Starting WebSocket server on ws://localhost:3030/ws");
-    warp::serve(routes).run(([0, 0, 0, 0], 3030)).await;
+    let _ = tx.send(true); // 发送服务器即将开始监听的信号
+    warp::serve(routes).run(([0, 0, 0, 0], 3030)).await; // 这将阻塞当前async block，直到服务器停止
     Ok(())
 }
 
