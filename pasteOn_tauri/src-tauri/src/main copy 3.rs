@@ -30,14 +30,12 @@ async fn main() {
             tokio::spawn(async move {
                 let (tx_mdns, rx_mdns) = oneshot::channel();
                 thread::spawn(move || {
-                    start_mdns_query(tx_mdns); // 传递 AppHandle 到服务发现函数
+                    start_mdns_query(&app_handle, tx_mdns); // 传递 AppHandle 到服务发现函数
                 });
 
                 // 接收 mDNS 查询的结果
                 if let Ok(Some((ip, port))) = rx_mdns.await {
                     println!("Service found at IP: {}, Port: {}", ip, port);
-                    let window = app_handle.get_window("main").unwrap();
-                    send_server_details(window,ip.clone(), port.clone());
                 } else {
                     println!("No service found, starting WebSocket server.");
                     // 启动 WebSocket 服务器
@@ -54,9 +52,6 @@ async fn main() {
                     // 等待 WebSocket 服务器启动的信号
                     if rx_ws.await.unwrap() {
                         println!("WebSocket server setup complete.");
-                        let window = app_handle.get_window("main").unwrap();
-                        let port = "3031".parse::<u16>();
-                        send_server_details(window,"localhost".to_string(), port.unwrap());
                         // 进行 mDNS 注册
                         register_mdns_service();
                     } else {

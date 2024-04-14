@@ -1,55 +1,62 @@
 import React, { useState, useEffect } from 'react';
-import ItemsManager from './models/itemsManager';
-import { useKeyboardShortcuts } from './hook/useKeyboardShortcuts';
-import { useClipboard } from './hook/useClipboard';
-import { appWindow, LogicalSize } from '@tauri-apps/api/window';
-import Settings from './views/Settings';
-
+import { listen } from '@tauri-apps/api/event';
 function App() {
-  const [isVisible, setIsVisible] = useState(true);
-  const { writeToClipboard, readFromClipboard } = useClipboard();
-  const MAX_LENGTH = 5;  // Define the maximum length of the items array
-  const [windowSize, setWindowSize] = useState(new LogicalSize(400, 100));
-  const [isExpanded, setIsExpanded] = useState(false);  // New state to control the expanded area
-
-  const { items, adjustIndex } = ItemsManager({ isVisible, setIsVisible, writeToClipboard, readFromClipboard, MAX_LENGTH });
+  const [webSocket, setWebSocket] = useState(null);
+  const [messages, setMessages] = useState([]);
+  
 
   useEffect(() => {
-    appWindow.setIgnoreCursorEvents(!isVisible)
-      .then(() => console.log(`Cursor events are now ${isVisible ? 'ignored' : 'processed'}.`))
-      .catch(error => console.error('Failed to set cursor events:', error));
-  }, [isVisible]);
+      const unlisten = listen('server-details', (event) => {
+          console.log('Received server details:', event.payload);
+          const ws = new WebSocket(event.payload);
+          // 设置 WebSocket 连接的相关逻辑
+      });
+  
+      return () => {
+          unlisten.then((func) => func());
+      };
+  }, []);
+  
+  useEffect(() => {
+    // 创建 WebSocket 连接
+    const ws = new WebSocket('ws://192.168.1.130:3030/ws');
+    ws.onopen = () => {
+      console.log('Connected to WebSocket');
+    };
+    ws.onmessage = (event) => {
+      console.log('Message from server ', event.data);
+      setMessages(prevMessages => [...prevMessages, event.data]);
+    };
+    ws.onerror = (error) => {
+      console.error('WebSocket error: ', error);
+    };
+    ws.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
 
-  useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex, () => writeToClipboard(items[index].toString()));
+    setWebSocket(ws);
 
-  const toggleWindowSize = () => {
-    const expanded = windowSize.height === 100; // Check if the window is in minimized state
-    const newHeight = expanded ? 300 : 100;  // Expand if minimized, minimize if expanded
-    const newSize = new LogicalSize(windowSize.width, newHeight);
-    appWindow.setSize(newSize)
-      .then(() => {
-        setWindowSize(newSize);
-        setIsExpanded(expanded);
-      })
-      .catch(error => console.error('Failed to set window size:', error));
+    // 清理函数
+    return () => {
+      ws.close();
+    };
+  }, []);
+
+  const sendMessage = (message) => {
+    if (webSocket) {
+      webSocket.send(message);
+    }
   };
 
   return (
-    <div
-      onDoubleClick={toggleWindowSize}
-      data-tauri-drag-region
-      className={`flex flex-col w-full h-screen z-0 overflow-hidden rounded-xl transition-opacity ease-in-out duration-500  ${isVisible ? 'bg-red-200' : 'opacity-0 pointer-events-none'}`}
-    >
-      <div
-      data-tauri-drag-region
-        className={`flex flex-col w-full ${isExpanded ? "h-1/3":"h-screen"} z-10 max-h-200 p-2 text-ellipsis overflow-hidden  items-center justify-center bg-red-400 rounded-xl`}
-      >
-        <h1 className=" text-base font-bold line-clamp-3">{items[0]}</h1>
-      </div>
-
-      <div className={`flex-grow no-scrollbar overflow-y-scroll transition-opacity duration-500 ease-in-out ${isExpanded ? 'transform-none' : 'transform scale-y-0'}`}>
-        {isExpanded && <Settings />}
-      </div>
+    <div>
+      <h1>WebSocket Messages</h1>
+      <ul>
+        {messages.map((msg, index) => (
+          <li key={index}>{msg}</li>
+        ))}
+      </ul>
+      <button onClick={() => sendMessage("Hello, Server!")}>Send Message</button>
     </div>
   );
 }
