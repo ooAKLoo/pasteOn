@@ -5,21 +5,27 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::oneshot;
 
-pub fn start_mdns_query(sender: oneshot::Sender<()>) {
+pub fn start_mdns_query(sender: oneshot::Sender<Option<(String, u16)>>) {
     let mdns = ServiceDaemon::new().expect("Failed to create daemon");
-    let service_type = "_ws._tcp.local.";  // 专注于WebSocket服务
+    let service_type = "_ws._tcp.local.";  // Focused on WebSocket services
     let receiver = mdns.browse(service_type).expect("Failed to browse");
 
-    let service_found = Arc::new(Mutex::new(false));
+    let service_info = Arc::new(Mutex::new(None));
 
-    let service_found_thread = service_found.clone();
+    let service_info_thread = service_info.clone();
     thread::spawn(move || {
         while let Ok(event) = receiver.recv() {
+            println!("Received event: {:?}", event);
             match event {
                 ServiceEvent::ServiceResolved(info) => {
                     println!("Resolved a new service: {}", info.get_fullname());
-                    let mut found = service_found_thread.lock().unwrap();
-                    *found = true;
+                    // Iterating through HashSet and taking any IP
+                    let ip = info.get_addresses().iter().next().map(|a| a.to_string());
+                    let port = info.get_port();
+                    if let Some(ip) = ip {
+                        let mut service = service_info_thread.lock().unwrap();
+                        *service = Some((ip, port));
+                    }
                 },
                 other_event => {
                     println!("Received other event: {:?}", other_event);
@@ -29,14 +35,14 @@ pub fn start_mdns_query(sender: oneshot::Sender<()>) {
     });
 
     thread::sleep(Duration::from_secs(5));
-    let was_service_found = *service_found.lock().unwrap();
-    println!("Service discovery status: {}", if was_service_found { "Found" } else { "Not Found" });
-
-    if !was_service_found {
-        println!("No service found, allowing WebSocket server to start...");
-        sender.send(()).expect("Failed to send start signal");
+    let service = service_info.lock().unwrap().clone();
+    if let Some((ip, port)) = &service {
+        println!("Service discovery successful: IP: {}, Port: {}", ip, port);
+    } else {
+        println!("No service found.");
     }
 
+    sender.send(service).expect("Failed to send service info");
     mdns.shutdown().unwrap();
 }
 

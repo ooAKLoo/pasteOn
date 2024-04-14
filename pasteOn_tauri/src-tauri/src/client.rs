@@ -1,9 +1,11 @@
 use futures_util::StreamExt; // 确保包括这行来获得`.next()`方法
 
-pub async fn connect_and_listen_to_websocket() {
-    let url = "ws://localhost:3030/ws";
+pub async fn connect_and_listen_to_websocket(ip: Option<String>, port: Option<u16>) {
+    let ip = ip.as_deref().unwrap_or("localhost");
+    let port = port.unwrap_or(3031);
+    let url = format!("ws://{}:{}/ws", ip, port);
 
-    match tokio_tungstenite::connect_async(url).await {
+    match tokio_tungstenite::connect_async(&url).await {
         Ok((mut socket, _)) => {
             println!("WebSocket client connected.");
             while let Some(msg) = socket.next().await {

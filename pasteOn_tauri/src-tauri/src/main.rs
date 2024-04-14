@@ -20,47 +20,45 @@ use std::collections::HashMap;
 async fn main() {
     let clients: Clients = Arc::new(Mutex::new(HashMap::new()));
 
-    let (tx, rx) = oneshot::channel::<bool>();
+    let (tx, rx) = oneshot::channel::<Option<(String, u16)>>();
     let clients_clone = clients.clone();
 
-    let mdns_service = tokio::spawn(async move {
+    // 异步运行 mDNS 查询
+    tokio::spawn(async move {
         let (tx_mdns, rx_mdns) = oneshot::channel();
         thread::spawn(move || {
+            // 发送服务信息，而不是只发送成功信号
             start_mdns_query(tx_mdns);
         });
 
-        if rx_mdns.await.is_ok() {
-            // Start WebSocket server in a new thread
-
+        // 接收 mDNS 查询的结果
+        if let Ok(Some((ip, port))) = rx_mdns.await {
+            println!("Service found at IP: {}, Port: {}", ip, port);
+            // 连接到找到的服务
+            connect_and_listen_to_websocket(Some(ip),Some(port)).await;
+        } else {
+            println!("No service found, starting WebSocket server.");
+            // 启动 WebSocket 服务器
+            let (tx_ws, rx_ws) = oneshot::channel::<bool>();
             thread::spawn(move || {
                 let rt = Runtime::new().unwrap();
                 rt.block_on(async {
-                    if start_websocket_server(clients_clone, tx).await.is_ok() {
+                    if start_websocket_server(clients_clone, tx_ws).await.is_ok() {
                         println!("WebSocket server started successfully.");
                     }
                 });
             });
-        
-            // 等待接收到服务器启动的信号
-            if rx.await.unwrap() {
+
+            // 等待 WebSocket 服务器启动的信号
+            if rx_ws.await.unwrap() {
                 println!("WebSocket server setup complete.");
-                // Start WebSocket client after server is confirmed to be started
-                connect_and_listen_to_websocket().await;
+                // WebSocket 服务器已启动，准备接收客户端连接
             } else {
                 println!("Failed to start WebSocket server.");
             }
-        
         }
-        println!("WebSocket server started successfully.");
-        // mDNS查询失败或服务未找到，启动WebSocket客户端
-        // let client = tokio::spawn(async {
-        //     // 等待服务器启动信号
-        //     rx.await.unwrap();
-        //     connect_and_listen_to_websocket().await;
-        // });
-
-        // client.await.unwrap();
     });
+
     // 继续执行其他任务
     println!("Starting Tauri application");
     start_tauri_app(); 
