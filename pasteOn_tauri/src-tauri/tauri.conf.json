@@ -25,6 +25,9 @@
       },
       "clipboard": {
         "all": true
+      },
+      "os": {
+        "all": true
       }
     },
     "windows": [

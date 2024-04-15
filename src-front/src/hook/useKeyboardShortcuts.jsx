@@ -1,16 +1,26 @@
 import { useEffect } from 'react';
-import { globalShortcut } from '@tauri-apps/api';
+import { globalShortcut, os } from '@tauri-apps/api';
 
 export function useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex, copyToClipboard) {
     useEffect(() => {
-        const toggleVisibility = () => {
-            setIsVisible(prev => !prev);
+        const registerShortcuts = async () => {
+            const osType = await os.type(); // Gets the OS type
+            const ctrlKey = osType === 'darwin' ? 'Cmd' : 'Control'; // Use Cmd for macOS and Control for others
+
+            const toggleVisibilityShortcut = `${ctrlKey}+Shift+A`;
+            await globalShortcut.register(toggleVisibilityShortcut, () => {
+                setIsVisible(prev => !prev);
+            }).catch(console.error);
+
+            return () => {
+                globalShortcut.unregister(toggleVisibilityShortcut).catch(console.error);
+            };
         };
 
-        globalShortcut.register('Control+Shift+A', toggleVisibility).catch(console.error);
+        registerShortcuts();
 
         return () => {
-            globalShortcut.unregister('Control+Shift+A').catch(console.error)
+            globalShortcut.unregisterAll().catch(console.error);
         };
     }, []);
 

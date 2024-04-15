@@ -18,12 +18,11 @@ function Settings() {
                 <ShortcutSettings shortcut={rollbackKey} setShortcut={setRollbackKey} />
             </div>
             <ColorSettings color={color} onColorChange={setColor} />
-            <div class='flex justify-between gap-4 w-full text-sm font-bold'>
-                <div class='flex-2 w-1/3 h-10 bg-slate-50 flex items-center justify-center'>Current Server IP</div>
-                <div class='flex-1 w-full h-10 bg-slate-50 flex items-center justify-center'>设为服务器？</div>
-                <div class='flex-1 w-full h-10 bg-slate-50 flex items-center justify-center'>123</div>
+            <div className='flex justify-between gap-4'>
+                <HistorySettings maxHistory={maxHistory} setMaxHistory={setMaxHistory} />
+               <div className='flex-1 w-10 h-10 bg-slate-50'></div>
+               <div className='flex-1  w-10 h-10 bg-slate-50'></div>
             </div>
-
         </div>
     );
 }

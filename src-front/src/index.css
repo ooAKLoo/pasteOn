@@ -3,7 +3,7 @@
 @import 'tailwindcss/utilities';
 
 
-/* App.css 或其他全局样式文件 */
+App.css 或其他全局样式文件
 .modalInput::-webkit-inner-spin-button,
 .modalInput::-webkit-outer-spin-button {
     -webkit-appearance: none;
@@ -39,4 +39,16 @@ input[type="color"]::-webkit-color-swatch-wrapper {
 
 input[type="color"]::-webkit-color-swatch {
   border: none;
+}
+
+/* For Chrome, Safari, Edge, Opera */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* For Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
 }

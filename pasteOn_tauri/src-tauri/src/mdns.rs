@@ -4,9 +4,7 @@ use std::thread;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::oneshot;
-use crate::app::send_server_details;
-use tauri::Manager; // 添加这行
-use tauri::AppHandle; // 确保 AppHandle 类型已导入
+
 pub fn start_mdns_query(sender: oneshot::Sender<Option<(String, u16)>>) {
     let mdns = ServiceDaemon::new().expect("Failed to create daemon");
     let service_type = "_ws._tcp.local.";  // Focused on WebSocket services

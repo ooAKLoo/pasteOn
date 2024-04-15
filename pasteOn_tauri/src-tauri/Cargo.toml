@@ -11,11 +11,10 @@ edition = "2021"
 tauri-build = { version = "1", features = [] }
 
 [dependencies]
-tauri = { version = "1", features = [ "window-set-size", "macos-private-api", "clipboard-all", "window-set-ignore-cursor-events", "global-shortcut-all", "window-start-dragging", "shell-open"] }
+tauri = { version = "1", features = [ "os-all", "window-set-size", "macos-private-api", "clipboard-all", "window-set-ignore-cursor-events", "global-shortcut-all", "window-start-dragging", "shell-open"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["full"] }
-warp = "0.3"
 mdns-sd = "0.10.5"
 chrono = "0.4"
 futures = "0.3"

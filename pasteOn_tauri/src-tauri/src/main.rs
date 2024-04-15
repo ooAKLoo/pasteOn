@@ -9,10 +9,10 @@ use std::sync::Arc;
 use std::thread;
 use tokio::runtime::Runtime;
 use tokio::sync::{oneshot, Mutex};
-use tauri::{AppHandle, Manager};  // Ensure Manager trait is imported
+use tauri::{ Manager};  // Ensure Manager trait is imported
 use crate::websocket::{ start_websocket_server };
 use crate::mdns::{ start_mdns_query, register_mdns_service };
-use crate::app::{ start_tauri_app, send_server_details };
+use crate::app::{ send_server_details };
 use std::collections::HashMap;
 use local_ip_address::local_ip;
 
@@ -22,7 +22,6 @@ async fn main() {
   // Using Vec for simplicity with ws
 
     let (tx, rx) = oneshot::channel::<Option<(String, u16)>>();
-    let clients_clone = clients.clone();
 
     let my_local_ip = local_ip().unwrap();
 
@@ -42,11 +41,6 @@ async fn main() {
                 } else {
                     println!("No service found, starting WebSocket server.");
                     let rt = Runtime::new().unwrap();
-                    // thread::spawn(move || {
-                    //     // Start WebSocket server on a specific port
-                    //     start_websocket_server(&(my_local_ip.to_string()+':3031'), clients);
-                    // });  // Adapted to use ws
-
                     
                     thread::spawn(move || {
                         let server_address = format!("{}:{}", my_local_ip, "3031");

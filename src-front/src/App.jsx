@@ -79,13 +79,13 @@ function App() {
       className={`flex flex-col w-full h-screen z-0 overflow-hidden rounded-xl transition-opacity ease-in-out duration-500  ${isVisible ? 'bg-red-200' : 'opacity-0 pointer-events-none'}`}
     >
       <div
-      data-tauri-drag-region
+        data-tauri-drag-region
         className={`flex flex-col w-screen ${isExpanded ? "h-1/3":"h-screen"} z-10 max-h-200 p-2 text-ellipsis overflow-hidden  items-center justify-center bg-red-400 rounded-xl`}
       >
-        <h1 className=" text-base font-bold line-clamp-3 p-2 bg-white">{items[0]}</h1>
+        <h1 data-tauri-drag-region className=" w-full h-full text-base font-bold line-clamp-3 p-2">{items[0]}</h1>
       </div>
 
-      <div className={`flex-grow no-scrollbar overflow-y-scroll transition-opacity duration-500 ease-in-out ${isExpanded ? 'transform-none' : 'transform scale-y-0'}`}>
+      <div className={`flex-grow no-scrollbar overflow-y-scroll transition-opacity duration-500 ease-in-out ${isExpanded ? ' animate-slide-down' : 'animate-collapse-zoom'}`}>
         {isExpanded && <Settings />}
       </div>
     </div>
