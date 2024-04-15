@@ -1,66 +1,94 @@
-use crate::state::Clients;
 use warp::Filter;
 use std::sync::Arc;
 use warp::ws::{WebSocket, Message};
-use futures::{StreamExt,SinkExt};  // 导入 SinkExt 以获得 send 方法
+use futures::{StreamExt, SinkExt};
 use chrono::prelude::*;
-use tokio::sync::oneshot;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, oneshot};
 use std::collections::HashMap;
+use uuid::Uuid;
+use crate::state::Clients;
 
-pub async fn start_websocket_server(clients: Arc<Mutex<HashMap<String, WebSocket>>>, tx: oneshot::Sender<bool>) -> Result<(), warp::Error> {
+pub async fn start_websocket_server(clients: Clients, tx: oneshot::Sender<bool>) -> Result<(), warp::Error> {
     let clients_filter = warp::any().map(move || Arc::clone(&clients));
 
     let routes = warp::path("ws")
         .and(warp::ws())
         .and(clients_filter)
-        .map(|ws: warp::ws::Ws, clients: Arc<Mutex<HashMap<String, WebSocket>>>| {
+        .map(|ws: warp::ws::Ws, clients: Clients| {
             ws.on_upgrade(move |socket| handle_connection(socket, clients))
         });
 
     println!("Starting WebSocket server on ws://localhost:3030/ws");
-    let _ = tx.send(true); // 发送服务器即将开始监听的信号
-    warp::serve(routes).run(([0, 0, 0, 0], 3031)).await; // 这将阻塞当前async block，直到服务器停止
+    let _ = tx.send(true);
+    warp::serve(routes).run(([0, 0, 0, 0], 3031)).await;
     Ok(())
 }
 
+async fn handle_connection(socket: WebSocket, clients: Clients) {
+    let client_id = Uuid::new_v4().to_string();
+    let socket = Arc::new(Mutex::new(socket));
 
-// 处理 WebSocket 连接的异步函数
-async fn handle_connection(mut socket: WebSocket, clients: Arc<Mutex<HashMap<String, WebSocket>>>) {
-    println!("New WebSocket connection");
+    // 插入新连接
+    {
+        let mut clients_lock = clients.lock().await;
+        clients_lock.insert(client_id.clone(), Arc::clone(&socket));
+    }
+
+    println!("New WebSocket connection: {}", client_id);
     let now = Utc::now();
     let welcome_msg = format!("Welcome! Current time: {}", now.to_rfc3339());
 
-    // 发送欢迎消息
-    if let Err(e) = socket.send(Message::text(welcome_msg)).await {
-        eprintln!("Error sending welcome message: {:?}", e);
-    }
+    // 仅在发送欢迎消息时持有锁
+    {
+        let mut socket_lock = socket.lock().await;
+        if let Err(e) = socket_lock.send(Message::text(welcome_msg)).await {
+            eprintln!("Error sending welcome message: {:?}", e);
+        }
+    } // 这里释放了对socket的锁
 
-    // 循环监听客户端消息
-    while let Some(result) = socket.next().await {
-        match result {
-            Ok(message) => {
-                // 如果接收到消息，则处理消息
+    // 持续监听和处理消息，每次需要时重新获取socket的锁
+    loop {
+        let next_message;
+        {
+            let mut socket_lock = socket.lock().await;
+            next_message = socket_lock.next().await;
+        } // 重新在循环中获取锁，并在获取消息后立即释放
+
+        match next_message {
+            Some(Ok(message)) => {
                 if message.is_text() || message.is_binary() {
                     let received_text = message.to_str().unwrap_or_default();
                     println!("Received message: {}", received_text);
-                    let response = format!("Echo: {}", received_text);
-                    // 发送回响消息
-                    if let Err(e) = socket.send(Message::text(response)).await {
-                        eprintln!("Error sending message: {:?}", e);
-                        break;
+
+                    let clients_lock = clients.lock().await;
+                    println!("Number of connected clients: {}", clients_lock.len());
+                    for (_client_id, client) in clients_lock.iter() {
+                        {
+                        println!("Attempting to lock client ID: {}", _client_id);  // 尝试锁定前输出
+                        let mut client_lock = client.lock().await;
+                        println!("Client ID: {}, WebSocket state: {:?}", _client_id, client_lock);  // 打印每个客户端的WebSocket状态信息
+                        if let Err(e) = client_lock.send(Message::text(received_text.clone())).await {
+                            eprintln!("Error broadcasting message: {:?}", e);
+                        }
+                    }
                     }
                 } else if message.is_close() {
-                    // 如果接收到关闭消息，则断开连接
                     println!("Client requested to close connection.");
                     break;
                 }
             },
-            Err(e) => {
+            Some(Err(e)) => {
                 eprintln!("Error receiving message: {:?}", e);
                 break;
-            }
+            },
+            None => break, // 没有更多消息，退出循环
         }
+    }
+
+    // 移除断开连接的客户端
+    {
+        let mut clients_lock = clients.lock().await;
+        clients_lock.remove(&client_id);
     }
     println!("WebSocket connection closed.");
 }

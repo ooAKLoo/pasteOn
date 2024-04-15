@@ -34,8 +34,9 @@ function App() {
   useEffect(() => {
     const unlisten = listen('server-details', (event) => {
       console.log('Received server details:', event.payload);
-      console.log(`ws://${event.payload.ip}:${event.payload.port}/ws`);
-      const ws = new WebSocket(`${event.payload}/ws`);
+      const wsAddress = `ws://${event.payload.ip}:${event.payload.port}`;
+    console.log("Attempting to connect to WebSocket server at:", wsAddress);
+      const ws = new WebSocket(`${event.payload}`);
       ws.onopen = function() {
         console.log('Connected');
         ws.send('Hello Server!');
