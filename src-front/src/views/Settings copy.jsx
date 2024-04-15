@@ -1,29 +1,79 @@
 import React, { useState } from 'react';
-import ColorSettings from './sets/ColorSettings';
-import HistorySettings from './sets/HistorySettings';
-import ShortcutSettings from './sets/ShortcutSettings';
-
-
 
 function Settings() {
-    const [color, setColor] = useState('#ffffff');
-    const [showKey, setShowKey] = useState('Ctrl+Shift+S');
-    const [rollbackKey, setRollbackKey] = useState('Ctrl+Shift+Z');
-    const [maxHistory, setMaxHistory] = useState(5);
+    const [isOpen, setIsOpen] = useState([false, false, false, false]);
+
+    const togglePanel = (index) => {
+        const newIsOpen = [...isOpen];
+        newIsOpen[index] = !newIsOpen[index];
+        setIsOpen(newIsOpen);
+    };
 
     return (
-        <div className="flex flex-col h-full  justify-between p-2">
-            <div className='flex flex-row gap-4 h-10  justify-between'>
-                <ShortcutSettings shortcut={showKey} setShortcut={setShowKey} />
-                <ShortcutSettings shortcut={rollbackKey} setShortcut={setRollbackKey} />
-            </div>
-            <ColorSettings color={color} onColorChange={setColor} />
-            <div class='flex justify-between gap-4 w-full text-sm font-bold'>
-                <div class='flex-2 w-1/3 h-10 bg-slate-50 flex items-center justify-center'>Current Server IP</div>
-                <div class='flex-1 w-full h-10 bg-slate-50 flex items-center justify-center'>设为服务器？</div>
-                <div class='flex-1 w-full h-10 bg-slate-50 flex items-center justify-center'>123</div>
+        <div className="p-5">
+            {/* Panel 1 */}
+            <div className="mb-4">
+                <button
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                    onClick={() => togglePanel(0)}
+                >
+                    {isOpen[0] ? 'Close' : 'Open'} Panel 1
+                </button>
+                <div className={`overflow-hidden ${isOpen[0] ? 'animate-expand-top-left' : 'animate-collapse-bottom-right'}`}>
+                    <div className="p-4 border border-gray-200 shadow-lg rounded-md bg-white">
+                        <h2 className="text-lg font-semibold">Panel 1</h2>
+                        <p>Adjust your settings for Panel 1 here.</p>
+                    </div>
+                </div>
             </div>
 
+            {/* Panel 2 */}
+            <div className="mb-4">
+                <button
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                    onClick={() => togglePanel(1)}
+                >
+                    {isOpen[1] ? 'Close' : 'Open'} Panel 2
+                </button>
+                <div className={`overflow-hidden ${isOpen[1] ? 'animate-expand-zoom' : 'animate-collapse-zoom'}`}>
+                    <div className="p-4 border border-gray-200 shadow-lg rounded-md bg-white">
+                        <h2 className="text-lg font-semibold">Panel 2</h2>
+                        <p>Adjust your settings for Panel 2 here.</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Panel 3 */}
+            <div className="mb-4">
+                <button
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                    onClick={() => togglePanel(2)}
+                >
+                    {isOpen[2] ? 'Close' : 'Open'} Panel 3
+                </button>
+                <div className={`overflow-hidden ${isOpen[2] ? 'animate-expand-fade' : 'animate-collapse-fade'}`}>
+                    <div className="p-4 border border-gray-200 shadow-lg rounded-md bg-white">
+                        <h2 className="text-lg font-semibold">Panel 3</h2>
+                        <p>Adjust your settings for Panel 3 here.</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Panel 4 */}
+            <div className="mb-4">
+                <button
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                    onClick={() => togglePanel(3)}
+                >
+                    {isOpen[3] ? 'Close' : 'Open'} Panel 4
+                </button>
+                <div className={`overflow-hidden ${isOpen[3] ? 'animate-expand-top-left' : 'animate-collapse-bottom-right'}`}>
+                    <div className="p-4 border border-gray-200 shadow-lg rounded-md bg-white">
+                        <h2 className="text-lg font-semibold">Panel 4</h2>
+                        <p>Adjust your settings for Panel 4 here.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

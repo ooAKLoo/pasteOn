@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import ColorSettings from './sets/ColorSettings';
 import HistorySettings from './sets/HistorySettings';
-import  {ShortcutSettings,ShortcutSettings2}  from './sets/ShortcutSettings';
+import { ShortcutSettings, ShortcutSettings2 } from './sets/ShortcutSettings';
 import { useNotification } from '../hook/NotificationContext';
 
 function Settings() {
     const [color, setColor] = useState('#ffffff');
+    const [showKey, setShowKey] = useState('Ctrl+Shift+S');
+    const [rollbackKey, setRollbackKey] = useState('Ctrl+Shift+Z');
     const [maxHistory, setMaxHistory] = useState(5);
     const { showNotification } = useNotification();
 
@@ -15,12 +17,20 @@ function Settings() {
         showNotification("Random color applied successfully!", "success");
     };
 
+    const handleShortcutChange = (newShortcut, type) => {
+        if (type === 'showKey') {
+            setShowKey(newShortcut);
+        } else {
+            setRollbackKey(newShortcut);
+        }
+        showNotification(`Shortcut for ${type === 'showKey' ? 'visibility' : 'rollback'} updated to ${newShortcut}`, "success");
+    };
 
     return (
         <div className="flex flex-col h-full justify-between p-2 gap-2">
             <div className='flex flex-row gap-4 h-10 font-bold justify-between'>
-                <ShortcutSettings  />
-                <ShortcutSettings2 />
+                <ShortcutSettings shortcut={showKey} setShortcut={(newShortcut) => handleShortcutChange(newShortcut, 'showKey')} />
+                <ShortcutSettings2 shortcut={rollbackKey} setShortcut={(newShortcut) => handleShortcutChange(newShortcut, 'rollbackKey')} />
             </div>
             <div className='flex grow justify-between gap-4'>
                 <div className='flex flex-1 flex-col justify-between gap-4 bg-white p-4 rounded-2xl'>
@@ -44,7 +54,7 @@ function Settings() {
                             value={maxHistory}
                             onChange={(e) => {
                                 setMaxHistory(parseInt(e.target.value, 10));
-                                showNotification("adjusted!", "success");
+                                showNotification("History length adjusted!", "success");
                             }}
                             title="History length"
                         />

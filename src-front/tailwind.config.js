@@ -12,6 +12,8 @@ export default {
         'collapse-fade': 'collapseFade 0.5s ease-in forwards',
         'slide-down': 'slideDown 0.5s ease-out forwards',
         'slide-up': 'slideUp 0.5s ease-in forwards',
+        'show-notification': 'showNotification 0.5s ease-out forwards',
+        'hide-notification': 'hideNotification 0.5s ease-in forwards'
       },
       keyframes: {
         expand: {
@@ -50,6 +52,14 @@ export default {
           '0%': { transform: 'translateY(0)', opacity: 1 },
           '100%': { transform: 'translateY(-100%)', opacity: 0 }
         },
+        showNotification: {
+          '0%': { transform: 'translateY(-100%)', opacity: 0 },
+          '100%': { transform: 'translateY(0)', opacity: 1 }
+        },
+        hideNotification: {
+          '0%': { transform: 'translateY(0)', opacity: 1 },
+          '100%': { transform: 'translateY(-100%)', opacity: 0 }
+        }
       },
     },
   },

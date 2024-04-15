@@ -52,3 +52,8 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+
+input::placeholder {
+    color: rgb(170, 170, 170); /* CSS 中定义颜色可以使用颜色名、十六进制代码或者 rgb 值 */
+}
