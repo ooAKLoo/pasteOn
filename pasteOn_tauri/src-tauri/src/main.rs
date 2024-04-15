@@ -17,10 +17,14 @@ use tokio::runtime::Runtime;
 use std::collections::HashMap;
 use tauri::{ AppHandle, Window };
 use tauri::Manager; // 确保导入 Manager trait
+use warp::ws::WebSocket;
 
 #[tokio::main]
 async fn main() {
-    let clients: Clients = Arc::new(Mutex::new(HashMap::new()));
+    let clients: Clients = Arc::new(Mutex::new(HashMap::new())); 
+    // let clients: Clients = Arc::new(Mutex::new(HashMap::new()));
+    // let clients: Clients = Arc::new(RwLock::new(HashMap::new()));
+
     let (tx, rx) = oneshot::channel::<Option<(String, u16)>>();
     let clients_clone = clients.clone();
     tauri::Builder
