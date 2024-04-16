@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-function ItemsManager({ isVisible, setIsVisible, writeToClipboard, readFromClipboard, MAX_LENGTH }) {
+function ItemsManager({ writeToClipboard, readFromClipboard, maxLength }) {
   const [items, setItems] = useState(["1", "2", "3"]);
 
   useEffect(() => {
@@ -15,15 +15,15 @@ function ItemsManager({ isVisible, setIsVisible, writeToClipboard, readFromClipb
             newItems.splice(existingIndex, 1);
           }
           newItems.unshift(text);
-          if (newItems.length > MAX_LENGTH) {
-            newItems = newItems.slice(0, MAX_LENGTH);
+          if (newItems.length > maxLength) {
+            newItems = newItems.slice(0, maxLength);
           }
           return newItems;
         });
       }
     }, 1000);
     return () => clearInterval(intervalId);
-  }, [readFromClipboard, MAX_LENGTH]);
+  }, [readFromClipboard, maxLength]);
 
   const adjustIndex = (direction) => {
     setItems(currentItems => {

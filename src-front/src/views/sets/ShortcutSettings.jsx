@@ -109,7 +109,7 @@ export function ShortcutSettings2() {
                         className="w-full text-center text-xs p-1 rounded-lg focus:outline-none"
                         type="text"
                         onFocus={() => setIsFocused(true)}
-                        placeholder="Click here to set shortcuts"
+                        placeholder="Rollback shortcuts"
                     />
                 </div>
             )}
