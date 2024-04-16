@@ -7,7 +7,7 @@ const defaultConfig = {
         scrollUp: 'Up',
         scrollDown: 'Down'
     },
-    colorScheme: '#ffffff', // 默认颜色方案
+    colorScheme: '#f87171', // 默认颜色方案
     maxLength: 5
 };
 const ConfigContext = createContext({ config: defaultConfig, setConfig: () => { } });
@@ -49,15 +49,29 @@ const updateMaxLength = async (newMaxLength) => {
 
     // 保存配置到文件
     const saveConfig = async (newConfig) => {
-        setConfigState(newConfig); // 更新状态
+        setConfigState(newConfig); // Update the state
 
-        const appDir = await path.appDir();
-        const configFile = path.join(appDir, 'config.json');
-        await fs.writeFile({
-            path: configFile,
-            contents: JSON.stringify(newConfig)
-        });
+        try {
+            const appConfigDir = await path.appConfigDir(); // Await for app config directory path
+            const configFile = await path.join(appConfigDir, 'config.json'); // Correctly await the joined path
+            console.log("Config file path:", configFile); // Should now log a correct, resolved path string
+    
+            // // Ensure the directory exists
+            // await fs.createDir(configFile, { recursive: true });
+    
+            // Write the file
+            await fs.writeFile({
+                path: configFile,
+                contents: JSON.stringify(newConfig)
+            });
+        } catch (error) {
+            console.error("Failed to write config file:", error);
+        }
     };
+    
+    
+    
+
 
     // 用于外部调用的统一配置更新方法
     const setConfig = (newSettings) => {
@@ -77,8 +91,8 @@ const updateMaxLength = async (newMaxLength) => {
     }, []);
 
     const loadConfig = async () => {
-        const appDir = await path.appDir();
-        const configFile = path.join(appDir, 'config.json');
+        const appDir = await path.appConfigDir();
+        const configFile =await path.join(appDir, 'config.json');
         try {
             const storedConfig = await fs.readTextFile(configFile);
             setConfigState({ ...defaultConfig, ...JSON.parse(storedConfig) });

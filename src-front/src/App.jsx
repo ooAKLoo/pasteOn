@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { listen } from '@tauri-apps/api/event'; 
 import { NotificationProvider } from './hook/NotificationContext';
 import NotificationBar from './views/NotificationBar';
 import ItemsManager from './models/itemsManager';
@@ -42,6 +43,37 @@ function App() {
     setDetailStyle({ backgroundColor: isExpanded ? detailHSL : 'transparent' });
   }, [config.colorScheme, isVisible, isExpanded]);
 
+  useEffect(() => {
+    const unlisten = listen('server-details', (event) => {
+      const ws = new WebSocket(`${event.payload}`);
+      ws.onopen = function() {
+        console.log('Connected');
+        ws.send('Hello Server!');
+      };
+      ws.onmessage = function(event) {
+        console.log('Received: ' + event.data);
+      };
+      ws.onclose = function() {
+        console.log('Disconnected');
+      };
+      setWebSocket(ws);
+    });
+
+    return () => {
+      unlisten.then((func) => func());
+      if (websocket) {
+        websocket.close();
+      }
+    };
+  }, []);  // 注意添加 websocket 到依赖数组中，如果它是动态变化的
+
+  useEffect(() => {
+    // 监听 items[0] 的变化
+    if (websocket && websocket.readyState === WebSocket.OPEN) {
+      websocket.send(items[0]);
+      console.log(`Sent to server: ${items[0]}`);
+    }
+  }, [items[0], websocket]);  // 添加 websocket 作为依赖，以确保使用最新的连接
 
   const toggleWindowSize = () => {
     const expanded = windowSize.height === 100;

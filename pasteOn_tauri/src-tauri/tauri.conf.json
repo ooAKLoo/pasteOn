@@ -33,7 +33,22 @@
         "all": true
       },
       "fs": {
-        "all": true
+        "all": true,
+        "readFile": true,
+        "writeFile": true,
+        "readDir": true,
+        "copyFile": true,
+        "createDir": true,
+        "removeDir": true,
+        "removeFile": true,
+        "renameFile": true,
+        "scope": [
+          "$APPDATA",
+          "$APPDATA/",
+          "$APPDATA/*",
+          "$APPDATA/**"
+        ],
+        "exists": true
       }
     },
     "windows": [
@@ -45,7 +60,7 @@
         "resizable": false,
         "transparent": true,
         "alwaysOnTop": true,
-        "focus":false
+        "focus": false
       }
     ],
     "macOSPrivateApi": true,

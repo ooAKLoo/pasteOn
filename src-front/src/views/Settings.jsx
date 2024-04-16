@@ -33,16 +33,16 @@ function Settings() {
                     <div className='flex flex-1 bg-gray-200 items-center justify-center rounded-lg'>Current Server IP</div>
                     <div className='flex flex-1 bg-gray-200 items-center justify-center rounded-lg'>设为服务器？</div>
                 </div>
-                <div className='flex flex-1 flex-col justify-between gap-4 bg-gray-200 p-4 rounded-2xl'>
+                <div className='flex flex-1 flex-col justify-between gap-4 bg-white p-4 rounded-2xl'>
                     <ColorSettings color={config.colorScheme} onColorChange={handleColorChange} />
                     <div className='flex flex-1 items-center gap-4 justify-center rounded-lg'>
                         <div
-                            className="flex-1 h-full rounded-lg bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 cursor-pointer"
+                            className="flex-1 h-full rounded-lg shadow-xl shadow-gray-300 bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 cursor-pointer"
                             onClick={handleRandomColor}
                             title="Random Color">
                         </div>
                         <input
-                            className="flex-1 h-full rounded-lg text-center font-bold justify-center items-center bg-white"
+                            className="flex-1 h-full rounded-lg text-center shadow-xl shadow-gray-300 font-bold justify-center items-center bg-white"
                             type="number" min="1" max="20"
                             value={config.maxLength}
                             onChange={(e) => {
