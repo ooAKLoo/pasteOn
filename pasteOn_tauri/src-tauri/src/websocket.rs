@@ -20,23 +20,28 @@ impl Handler for Server {
         let now = Utc::now();
         let welcome_msg = format!("Welcome! Current time: {}", now.to_rfc3339());
         self.out.send(Message::text(welcome_msg))?;
-
-        // 因为 Handler 是同步的，我们在这里不能使用 .await
-        // 这里需要考虑其他方法，比如使用 std::sync::Mutex
         Ok(())
     }
 
     // fn on_message(&mut self, msg: Message) -> Result<()> {
-    //     // 相同问题，这里也不能使用异步锁
+    //     println!("Received message: {}", msg);
+    //     self.out.broadcast(msg)?;
     //     Ok(())
     // }
-
     fn on_message(&mut self, msg: Message) -> Result<()> {
-        println!("Received message: {}", msg);
-        self.out.broadcast(msg)?;
+        if let Ok(text) = msg.as_text() {
+            println!("Received message: {}", text);
+            if text == "monitor check" {
+                // 这是一个监控检查消息，只回复发送者
+                self.out.send(Message::text("Monitor check successful"))?;
+            } else {
+                // 这不是监控检查消息，广播给所有客户端
+                self.out.broadcast(Message::text(text))?;
+            }
+        }
         Ok(())
     }
-
+    
     fn on_close(&mut self, code: CloseCode, reason: &str) {
         // 相同问题，这里也不能使用异步锁
         println!("WebSocket closing for ({:?}) {}", code, reason);

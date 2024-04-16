@@ -5,7 +5,7 @@ import { ShortcutSettings, ShortcutSettings2 } from './sets/ShortcutSettings';
 import { useNotification } from '../hook/NotificationContext';
 import { useConfig } from '../hook/ConfigContext ';
 
-function Settings({ serverIp, serverPort,setServerIp,setServerPort, onServerDetailsChange, onSetAsServerClick }) {
+function Settings({ connectionStatus, serverIp, serverPort, setServerIp, setServerPort, onServerDetailsChange, onSetAsServerClick }) {
     const { config, setConfig } = useConfig();
     const { showNotification } = useNotification();
 
@@ -30,17 +30,18 @@ function Settings({ serverIp, serverPort,setServerIp,setServerPort, onServerDeta
             </div>
             <div className='flex grow justify-between gap-4'>
                 <div className='flex flex-1 flex-col  justify-between gap-4 bg-white text-xs font-bold p-4 rounded-2xl'>
-                    <div  className="flex flex-1 focus:outline-none">
-                    <input
-                        className="w-full h-full bg-gray-200 items-center justify-center text-center rounded-lg focus:outline-none"
-                        value={`${serverIp}:${serverPort}`}
-                        onChange={(e) => {
-                            const [newIp, newPort] = e.target.value.split(':');
-                            setServerIp(newIp);
-                            setServerPort(newPort);
-                        }}
-                        onBlur={onServerDetailsChange}
-                    />
+                    <div className="flex flex-1 focus:outline-none relative">
+                        <input
+                            className="w-full h-full bg-gray-200 items-center justify-center text-center rounded-lg focus:outline-none"
+                            value={`${serverIp}:${serverPort}`}
+                            onChange={(e) => {
+                                const [newIp, newPort] = e.target.value.split(':');
+                                setServerIp(newIp);
+                                setServerPort(newPort);
+                            }}
+                            onBlur={onServerDetailsChange}
+                        />
+                       <div className={` absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${connectionStatus ==='Connected' ? ' bg-green-500':' bg-red-500'}`}></div>
                     </div>
 
                     <div

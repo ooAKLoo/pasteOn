@@ -9,6 +9,7 @@ import { appWindow, LogicalSize } from '@tauri-apps/api/window';
 import Settings from './views/Settings';
 import { useConfig } from './hook/ConfigContext ';
 import { hexToHSL } from './controller/util';
+import WebSocketManager from './models/WebSocketManager';
 
 
 function App() {
@@ -16,7 +17,7 @@ function App() {
   const { writeToClipboard, readFromClipboard } = useClipboard();
   const [windowSize, setWindowSize] = useState(new LogicalSize(400, 100));
   const [isExpanded, setIsExpanded] = useState(false);
-  const [websocket, setWebSocket] = useState(null);
+  // const [websocket, setWebSocket] = useState(null);
   const { config } = useConfig();
   const [maxLength, setMaxLength] = useState(config.maxLength);
   const { items, adjustIndex } = ItemsManager({ writeToClipboard, readFromClipboard, maxLength });
@@ -25,8 +26,32 @@ function App() {
   const [mainStyle, setMainStyle] = useState({ backgroundColor: config.colorScheme });
   const [detailStyle, setDetailStyle] = useState({});
 
-  const [serverIp, setServerIp] = useState('192.168.122.123');
-  const [serverPort, setServerPort] = useState('45555');
+  const [serverIp, setServerIp] = useState('');
+  const [serverPort, setServerPort] = useState('');
+
+  const [connectionStatus, setConnectionStatus] = useState('Disconnected');
+  const [hasConnected, setHasConnected] = useState(false);
+
+  const { websocket, connectWebSocket } = WebSocketManager({
+    serverIp,
+    serverPort,
+    onMessage: (data) => {
+      if (data === "Monitor check successful" || data === "Hello Server!") {
+        setConnectionStatus('Connected');
+      } else {
+        // 处理其他类型的消息
+        console.log('Broadcast message:', data);
+      }
+    },
+    onError: (error) => {
+      console.error('WebSocket Error:', error);
+      setConnectionStatus('Error');
+    },
+    onClose: () => {
+      console.log('WebSocket closed');
+      setConnectionStatus('Disconnected');
+    }
+  });
 
   useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex, () => writeToClipboard(items[index].toString()));
 
@@ -46,35 +71,29 @@ function App() {
     setDetailStyle({ backgroundColor: isExpanded ? detailHSL : 'transparent' });
   }, [config.colorScheme, isVisible, isExpanded]);
 
+  // 监听 Tauri 事件并更新 IP 和端口
   useEffect(() => {
     const unlisten = listen('server-details', (event) => {
       console.log('Received server details:', event.payload);
-      const serverDetails = event.payload.match(/ws:\/\/(.+):(\d+)/);
-      if (serverDetails) {
-        setServerIp(serverDetails[1]);
-        setServerPort(serverDetails[2]);
+      const match = event.payload.match(/ws:\/\/(.+):(\d+)/);
+      if (match) {
+        const [_, ip, port] = match;
+        setServerIp(ip);
+        setServerPort(port);
       }
-      const ws = new WebSocket(`${event.payload}`);
-      ws.onopen = function () {
-        console.log('Connected');
-        ws.send('Hello Server!');
-      };
-      ws.onmessage = function (event) {
-        console.log('Received: ' + event.data);
-      };
-      ws.onclose = function () {
-        console.log('Disconnected');
-      };
-      setWebSocket(ws);
     });
 
     return () => {
       unlisten.then((func) => func());
-      if (websocket) {
-        websocket.close();
-      }
     };
-  }, []);  // 注意添加 websocket 到依赖数组中，如果它是动态变化的
+  }, []);
+
+  useEffect(() => {
+    if (serverIp && serverPort && !hasConnected) {
+      connectWebSocket();
+      setHasConnected(true);  // 设置标记为已连接，防止未来重连
+    }
+  }, [serverIp, serverPort, connectWebSocket, hasConnected]);
 
   useEffect(() => {
     // 监听 items[0] 的变化
@@ -83,6 +102,22 @@ function App() {
       console.log(`Sent to server: ${items[0]}`);
     }
   }, [items[0], websocket]);  // 添加 websocket 作为依赖，以确保使用最新的连接
+
+  useEffect(() => {
+    let intervalId;
+    if (isExpanded && websocket && websocket.readyState === WebSocket.OPEN) {
+      intervalId = setInterval(() => {
+        console.log('Sending monitor check');
+        websocket.send('monitor check');  // Replace 'monitor check' with your actual monitoring message
+      }, 6000);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [isExpanded, websocket]);
 
   const toggleWindowSize = () => {
     const expanded = windowSize.height === 100;
@@ -96,45 +131,15 @@ function App() {
       .catch(error => console.error('Failed to set window size:', error));
   };
 
-  const handleServerDetailsChange1 = () => {
-    console.log(`Updated server details: ${serverIp}:${serverPort}`);
-    // setServerDetails({ ip: newIp, port: newPort });
-    // 你可能还想在这里更新 WebSocket 连接或其他逻辑
-  };
-
   const handleServerDetailsChange = () => {
-    const newIp=serverIp
-    const newPort=serverPort
+    const newIp = serverIp
+    const newPort = serverPort
     console.log(`Updated server details: ${newIp}:${newPort}`);
     setServerIp(newIp);
     setServerPort(newPort);
 
-    // 关闭现有的 WebSocket 连接（如果已经打开）
-    if (websocket) {
-        websocket.close();
-        console.log('Old WebSocket closed');
-    }
-
-    // 建立新的 WebSocket 连接
-    const newWebSocketUrl = `ws://${newIp}:${newPort}`;
-    const newWebSocket = new WebSocket(newWebSocketUrl);
-    newWebSocket.onopen = () => {
-        console.log('Connected to new server');
-        newWebSocket.send('Hello New Server!');
-    };
-    newWebSocket.onmessage = (event) => {
-        console.log('Received from server:', event.data);
-    };
-    newWebSocket.onclose = () => {
-        console.log('Disconnected from server');
-    };
-    newWebSocket.onerror = (error) => {
-        console.error('WebSocket Error:', error);
-    };
-
-    // 更新 WebSocket 状态
-    setWebSocket(newWebSocket);
-};
+    connectWebSocket();
+  };
 
   const handleSetAsServerClick = (ip, port) => {
     console.log(`Set as server with details: ${ip}:${port}`);
@@ -159,7 +164,7 @@ function App() {
         </div>
 
         <div className={`flex-grow no-scrollbar overflow-y-scroll transition-opacity duration-500 ease-in-out ${isExpanded ? 'animate-slide-down' : 'animate-collapse-zoom'}`}>
-          {isExpanded && <Settings serverIp={serverIp} serverPort={serverPort} setServerIp={setServerIp} setServerPort={setServerPort} onServerDetailsChange={handleServerDetailsChange}  onSetAsServerClick={handleSetAsServerClick}/>}
+          {isExpanded && <Settings connectionStatus={connectionStatus} serverIp={serverIp} serverPort={serverPort} setServerIp={setServerIp} setServerPort={setServerPort} onServerDetailsChange={handleServerDetailsChange} onSetAsServerClick={handleSetAsServerClick} />}
         </div>
       </div>
     </NotificationProvider>
