@@ -10,11 +10,11 @@ export function ShortcutSettings() {
 
     useEffect(() => {
         setShortcut(config.shortcutSettings["toggleVisibility"]); // 从配置中读取快捷键
-    }, [config]);
+    }, []);
 
     const updateConfig = () => {
         if (config.shortcutSettings.toggleVisibility !== shortcut) {
-            const newConfig = { ...config, shortcutSettings: { ...config.shortcutSettings, toggleVisibility: shortcut } };
+            const newConfig = {shortcutSettings: { toggleVisibility: shortcut } };
             setConfig(newConfig);
         }
         setIsFocused(false);
@@ -38,8 +38,8 @@ export function ShortcutSettings() {
 export function ShortcutSettings2() {
     const { config, setConfig } = useConfig();
     const [isFocused, setIsFocused] = useState(false);
-    const [shortcutUp, setShortcutUp] = useState('');
-    const [shortcutDown, setShortcutDown] = useState('');
+    const [shortcutUp, setShortcutUp] = useState(config.shortcutSettings.scrollUp);
+    const [shortcutDown, setShortcutDown] = useState(config.shortcutSettings.scrollDown);
     const containerRef = useRef(null);
     const handleKeyDownUp = createHandleKeyDown(setShortcutUp);
     const handleKeyDownDown = createHandleKeyDown(setShortcutDown);
@@ -47,7 +47,6 @@ export function ShortcutSettings2() {
         function handleClickOutside(event) {
             if (containerRef.current && !containerRef.current.contains(event.target)) {
                 setIsFocused(false);
-                // updateConfig();
             }
         }
         document.addEventListener('mousedown', handleClickOutside);
@@ -56,11 +55,11 @@ export function ShortcutSettings2() {
         };
     }, []);
 
-    useEffect(() => {
-        console.log("config.shortcutSettings[scrollUp]=",config.shortcutSettings["scrollUp"]);
-        setShortcutUp(config.shortcutSettings["scrollUp"]);
-        setShortcutDown(config.shortcutSettings["scrollDown"]);
-    }, [config]);
+    // useEffect(() => {
+    //     console.log("config.shortcutSettings[scrollUp]=",config.shortcutSettings["scrollUp"]);
+    //     setShortcutUp(config.shortcutSettings["scrollUp"]);
+    //     setShortcutDown(config.shortcutSettings["scrollDown"]);
+    // }, [config.shortcutSettings.scrollUp]);
 
     useEffect(() => {
         // 当输入框失去焦点时才检查是否需要更新配置
@@ -68,9 +67,7 @@ export function ShortcutSettings2() {
             // 只有当新值与当前配置中的值不同时，才更新配置
             if (config.shortcutSettings.scrollUp !== shortcutUp || config.shortcutSettings.scrollDown !== shortcutDown) {
                 const newConfig = {
-                    ...config,
                     shortcutSettings: {
-                        ...config.shortcutSettings,
                         scrollUp: shortcutUp,
                         scrollDown: shortcutDown
                     }
@@ -78,7 +75,7 @@ export function ShortcutSettings2() {
                 setConfig(newConfig);
             }
         }
-    }, [isFocused]); // 注意添加 config 和 setConfig 作为依赖项
+    }, [isFocused]);
 
     return (
         <div

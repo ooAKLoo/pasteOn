@@ -1,11 +1,11 @@
 import React from 'react';
 
 import ColorSettings from './sets/ColorSettings';
-import  {ShortcutSettings,ShortcutSettings2}  from './sets/ShortcutSettings';
+import { ShortcutSettings, ShortcutSettings2 } from './sets/ShortcutSettings';
 import { useNotification } from '../hook/NotificationContext';
 import { useConfig } from '../hook/ConfigContext ';
 
-function Settings() {
+function Settings({ serverIp, serverPort,setServerIp,setServerPort, onServerDetailsChange, onSetAsServerClick }) {
     const { config, setConfig } = useConfig();
     const { showNotification } = useNotification();
 
@@ -19,19 +19,36 @@ function Settings() {
         showNotification("Color changed successfully!", "success");
     };
     const handleMaxLengthChange = (newMaxLength) => {
-        setConfig({ ...config, maxLength: newMaxLength });
+        setConfig({ maxLength: newMaxLength });
         showNotification("Max history length adjusted!", "success");
     };
     return (
         <div className="flex flex-col h-full justify-between p-2 gap-2">
             <div className='flex flex-row gap-4 h-10 font-bold justify-between'>
-                <ShortcutSettings  />
+                <ShortcutSettings />
                 <ShortcutSettings2 />
             </div>
             <div className='flex grow justify-between gap-4'>
-                <div className='flex flex-1 flex-col justify-between gap-4 bg-white p-4 rounded-2xl'>
-                    <div className='flex flex-1 bg-gray-200 items-center justify-center rounded-lg'>Current Server IP</div>
-                    <div className='flex flex-1 bg-gray-200 items-center justify-center rounded-lg'>设为服务器？</div>
+                <div className='flex flex-1 flex-col  justify-between gap-4 bg-white text-xs font-bold p-4 rounded-2xl'>
+                    <div  className="flex flex-1 focus:outline-none">
+                    <input
+                        className="w-full h-full bg-gray-200 items-center justify-center text-center rounded-lg focus:outline-none"
+                        value={`${serverIp}:${serverPort}`}
+                        onChange={(e) => {
+                            const [newIp, newPort] = e.target.value.split(':');
+                            setServerIp(newIp);
+                            setServerPort(newPort);
+                        }}
+                        onBlur={onServerDetailsChange}
+                    />
+                    </div>
+
+                    <div
+                        className='flex flex-1 bg-gray-200 items-center justify-center rounded-lg cursor-pointer'
+                        onClick={onSetAsServerClick}
+                    >
+                        Set as Server
+                    </div>
                 </div>
                 <div className='flex flex-1 flex-col justify-between gap-4 bg-white p-4 rounded-2xl'>
                     <ColorSettings color={config.colorScheme} onColorChange={handleColorChange} />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { listen } from '@tauri-apps/api/event'; 
+import { listen } from '@tauri-apps/api/event';
 import { NotificationProvider } from './hook/NotificationContext';
 import NotificationBar from './views/NotificationBar';
 import ItemsManager from './models/itemsManager';
@@ -25,6 +25,9 @@ function App() {
   const [mainStyle, setMainStyle] = useState({ backgroundColor: config.colorScheme });
   const [detailStyle, setDetailStyle] = useState({});
 
+  const [serverIp, setServerIp] = useState('192.168.122.123');
+  const [serverPort, setServerPort] = useState('45555');
+
   useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex, () => writeToClipboard(items[index].toString()));
 
   useEffect(() => {
@@ -45,15 +48,21 @@ function App() {
 
   useEffect(() => {
     const unlisten = listen('server-details', (event) => {
+      console.log('Received server details:', event.payload);
+      const serverDetails = event.payload.match(/ws:\/\/(.+):(\d+)/);
+      if (serverDetails) {
+        setServerIp(serverDetails[1]);
+        setServerPort(serverDetails[2]);
+      }
       const ws = new WebSocket(`${event.payload}`);
-      ws.onopen = function() {
+      ws.onopen = function () {
         console.log('Connected');
         ws.send('Hello Server!');
       };
-      ws.onmessage = function(event) {
+      ws.onmessage = function (event) {
         console.log('Received: ' + event.data);
       };
-      ws.onclose = function() {
+      ws.onclose = function () {
         console.log('Disconnected');
       };
       setWebSocket(ws);
@@ -87,6 +96,51 @@ function App() {
       .catch(error => console.error('Failed to set window size:', error));
   };
 
+  const handleServerDetailsChange1 = () => {
+    console.log(`Updated server details: ${serverIp}:${serverPort}`);
+    // setServerDetails({ ip: newIp, port: newPort });
+    // 你可能还想在这里更新 WebSocket 连接或其他逻辑
+  };
+
+  const handleServerDetailsChange = () => {
+    const newIp=serverIp
+    const newPort=serverPort
+    console.log(`Updated server details: ${newIp}:${newPort}`);
+    setServerIp(newIp);
+    setServerPort(newPort);
+
+    // 关闭现有的 WebSocket 连接（如果已经打开）
+    if (websocket) {
+        websocket.close();
+        console.log('Old WebSocket closed');
+    }
+
+    // 建立新的 WebSocket 连接
+    const newWebSocketUrl = `ws://${newIp}:${newPort}`;
+    const newWebSocket = new WebSocket(newWebSocketUrl);
+    newWebSocket.onopen = () => {
+        console.log('Connected to new server');
+        newWebSocket.send('Hello New Server!');
+    };
+    newWebSocket.onmessage = (event) => {
+        console.log('Received from server:', event.data);
+    };
+    newWebSocket.onclose = () => {
+        console.log('Disconnected from server');
+    };
+    newWebSocket.onerror = (error) => {
+        console.error('WebSocket Error:', error);
+    };
+
+    // 更新 WebSocket 状态
+    setWebSocket(newWebSocket);
+};
+
+  const handleSetAsServerClick = (ip, port) => {
+    console.log(`Set as server with details: ${ip}:${port}`);
+    // 实现设置服务器逻辑
+  };
+
   return (
     <NotificationProvider>
       <div
@@ -105,7 +159,7 @@ function App() {
         </div>
 
         <div className={`flex-grow no-scrollbar overflow-y-scroll transition-opacity duration-500 ease-in-out ${isExpanded ? 'animate-slide-down' : 'animate-collapse-zoom'}`}>
-          {isExpanded && <Settings />}
+          {isExpanded && <Settings serverIp={serverIp} serverPort={serverPort} setServerIp={setServerIp} setServerPort={setServerPort} onServerDetailsChange={handleServerDetailsChange}  onSetAsServerClick={handleSetAsServerClick}/>}
         </div>
       </div>
     </NotificationProvider>

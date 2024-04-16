@@ -39,13 +39,13 @@ export const ConfigProvider = ({ children }) => {
     };
 
     // Update ConfigProvider to handle maxLength updates
-const updateMaxLength = async (newMaxLength) => {
-    const newConfig = {
-        ...config,
-        maxLength: newMaxLength
+    const updateMaxLength = async (newMaxLength) => {
+        const newConfig = {
+            ...config,
+            maxLength: newMaxLength
+        };
+        await saveConfig(newConfig);
     };
-    await saveConfig(newConfig);
-};
 
     // 保存配置到文件
     const saveConfig = async (newConfig) => {
@@ -54,11 +54,10 @@ const updateMaxLength = async (newMaxLength) => {
         try {
             const appConfigDir = await path.appConfigDir(); // Await for app config directory path
             const configFile = await path.join(appConfigDir, 'config.json'); // Correctly await the joined path
-            console.log("Config file path:", configFile); // Should now log a correct, resolved path string
     
-            // // Ensure the directory exists
-            // await fs.createDir(configFile, { recursive: true });
-    
+            // Check if the directory exists and create if not
+            await fs.createDir(appConfigDir, { recursive: true });
+
             // Write the file
             await fs.writeFile({
                 path: configFile,
@@ -68,10 +67,6 @@ const updateMaxLength = async (newMaxLength) => {
             console.error("Failed to write config file:", error);
         }
     };
-    
-    
-    
-
 
     // 用于外部调用的统一配置更新方法
     const setConfig = (newSettings) => {
@@ -92,7 +87,7 @@ const updateMaxLength = async (newMaxLength) => {
 
     const loadConfig = async () => {
         const appDir = await path.appConfigDir();
-        const configFile =await path.join(appDir, 'config.json');
+        const configFile = await path.join(appDir, 'config.json');
         try {
             const storedConfig = await fs.readTextFile(configFile);
             setConfigState({ ...defaultConfig, ...JSON.parse(storedConfig) });

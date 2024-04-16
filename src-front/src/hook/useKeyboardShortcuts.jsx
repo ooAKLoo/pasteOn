@@ -8,7 +8,6 @@ export function useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex, copyT
     // Register and unregister visibility toggle shortcut
     useEffect(() => {
         const registerVisibilityShortcut = async () => {
-            console.log("config.shortcutSettings.toggleVisibility--------------");
             await globalShortcut.register(config.shortcutSettings.toggleVisibility, () => {
                 setIsVisible(prev => !prev);
             }).catch(console.error);
@@ -28,7 +27,6 @@ export function useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex, copyT
     // Register and unregister arrow shortcuts based on visibility
     useEffect(() => {
         const registerArrows = async () => {
-            console.log("config.registerArrows.scrollUp--------------");
             await globalShortcut.register(config.shortcutSettings.scrollUp, () => {
                 adjustIndex(-1);
                 copyToClipboard();
@@ -40,7 +38,6 @@ export function useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex, copyT
         };
 
         const unregisterArrows = async () => {
-            console.log("config.unregisterArrows.scrollUp--------------");
             await globalShortcut.unregister(config.shortcutSettings.scrollUp).catch(console.error);
             await globalShortcut.unregister(config.shortcutSettings.scrollDown).catch(console.error);
         };
