@@ -2265,6 +2265,7 @@ dependencies = [
  "futures-util",
  "local-ip-address",
  "mdns-sd",
+ "once_cell",
  "serde",
  "serde_json",
  "tauri",

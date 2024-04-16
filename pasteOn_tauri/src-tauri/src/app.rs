@@ -1,6 +1,8 @@
-use tauri::{AppHandle, Window};
+use tauri::{ AppHandle, Window };
 use tauri::Manager; // 添加这行
-
+use local_ip_address::local_ip;
+use crate::state::Clients;
+use std::sync::{Arc, Mutex};
 
 pub fn start_tauri_app<F: FnOnce(AppHandle) + Send + 'static>(setup_fn: F) {
     tauri::Builder::default()
@@ -18,4 +20,3 @@ pub fn send_server_details(window: Window, ip: String, port: u16) {
     println!("Sending server details to the frontend: ws://{}:{}", ip, port);
     window.emit("server-details", format!("ws://{}:{}", ip, port)).expect("failed to emit event");
 }
-

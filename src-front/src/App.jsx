@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { listen } from '@tauri-apps/api/event';
-import { NotificationProvider } from './hook/NotificationContext';
+import { useNotification } from './hook/NotificationContext';
 import NotificationBar from './views/NotificationBar';
 import ItemsManager from './models/itemsManager';
 import { useKeyboardShortcuts } from './hook/useKeyboardShortcuts';
@@ -10,14 +10,14 @@ import Settings from './views/Settings';
 import { useConfig } from './hook/ConfigContext ';
 import { hexToHSL } from './controller/util';
 import WebSocketManager from './models/WebSocketManager';
-
+import { invoke } from '@tauri-apps/api/tauri';
 
 function App() {
   const [isVisible, setIsVisible] = useState(true);
   const { writeToClipboard, readFromClipboard } = useClipboard();
   const [windowSize, setWindowSize] = useState(new LogicalSize(400, 100));
   const [isExpanded, setIsExpanded] = useState(false);
-  // const [websocket, setWebSocket] = useState(null);
+  const { showNotification } = useNotification();
   const { config } = useConfig();
   const [maxLength, setMaxLength] = useState(config.maxLength);
   const { items, adjustIndex } = ItemsManager({ writeToClipboard, readFromClipboard, maxLength });
@@ -31,6 +31,8 @@ function App() {
 
   const [connectionStatus, setConnectionStatus] = useState('Disconnected');
   const [hasConnected, setHasConnected] = useState(false);
+
+  const [isSetting, setIsSetting] = useState(false);
 
   const { websocket, connectWebSocket } = WebSocketManager({
     serverIp,
@@ -80,6 +82,7 @@ function App() {
         const [_, ip, port] = match;
         setServerIp(ip);
         setServerPort(port);
+        setHasConnected(false);  // 重置连接标记
       }
     });
 
@@ -141,13 +144,23 @@ function App() {
     connectWebSocket();
   };
 
-  const handleSetAsServerClick = (ip, port) => {
-    console.log(`Set as server with details: ${ip}:${port}`);
-    // 实现设置服务器逻辑
+  const handleSetAsServerClick = async () => {
+    console.log("Set as server with details:");
+    setIsSetting(true); // 开始操作时设置为 true
+    invoke('start_server_if_needed')
+      .then((message) => {
+        console.log(message);
+        setIsSetting(false); // 操作完成后设置为 false
+        showNotification("Server set successfully", "success");
+      })
+      .catch((error) => {
+        console.error(error);
+        setIsSetting(false); // 发生错误也要设置为 false
+        showNotification("Failed to set server", "error");
+      });
   };
 
   return (
-    <NotificationProvider>
       <div
         onDoubleClick={toggleWindowSize}
         data-tauri-drag-region
@@ -164,10 +177,16 @@ function App() {
         </div>
 
         <div className={`flex-grow no-scrollbar overflow-y-scroll transition-opacity duration-500 ease-in-out ${isExpanded ? 'animate-slide-down' : 'animate-collapse-zoom'}`}>
-          {isExpanded && <Settings connectionStatus={connectionStatus} serverIp={serverIp} serverPort={serverPort} setServerIp={setServerIp} setServerPort={setServerPort} onServerDetailsChange={handleServerDetailsChange} onSetAsServerClick={handleSetAsServerClick} />}
+          {isExpanded && <Settings connectionStatus={connectionStatus}
+            serverIp={serverIp} serverPort={serverPort}
+            setServerIp={setServerIp}
+            setServerPort={setServerPort}
+            onServerDetailsChange={handleServerDetailsChange}
+            onSetAsServerClick={handleSetAsServerClick}
+            isSetting={isSetting}
+          />}
         </div>
       </div>
-    </NotificationProvider>
   );
 }
 

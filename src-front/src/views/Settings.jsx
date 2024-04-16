@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import ColorSettings from './sets/ColorSettings';
 import { ShortcutSettings, ShortcutSettings2 } from './sets/ShortcutSettings';
 import { useNotification } from '../hook/NotificationContext';
 import { useConfig } from '../hook/ConfigContext ';
+import LoadingSpinner from './LoadingSpinner';
 
-function Settings({ connectionStatus, serverIp, serverPort, setServerIp, setServerPort, onServerDetailsChange, onSetAsServerClick }) {
+function Settings({ connectionStatus, serverIp, serverPort, setServerIp, setServerPort, onServerDetailsChange, onSetAsServerClick,isSetting  }) {
     const { config, setConfig } = useConfig();
     const { showNotification } = useNotification();
 
@@ -41,14 +42,24 @@ function Settings({ connectionStatus, serverIp, serverPort, setServerIp, setServ
                             }}
                             onBlur={onServerDetailsChange}
                         />
-                       <div className={` absolute top-1.5 right-1.5 w-2 h-2 rounded-full ${connectionStatus ==='Connected' ? ' bg-green-500':' bg-red-500'}`}></div>
+                        <div className={` absolute top-1.5 right-1.5 w-2 h-2 rounded-full animate-pulse ${connectionStatus === 'Connected' ? ' bg-green-500' : ' bg-red-500'}`}></div>
                     </div>
 
                     <div
                         className='flex flex-1 bg-gray-200 items-center justify-center rounded-lg cursor-pointer'
                         onClick={onSetAsServerClick}
                     >
-                        Set as Server
+                        {isSetting ? (
+                            <>
+                                <LoadingSpinner color="text-gray-500" containerClassName="flex justify-center items-center" />
+                            </>
+                        ) :
+                            (
+                                <>
+                                    Set as Server
+                                </>
+                            )
+                        }
                     </div>
                 </div>
                 <div className='flex flex-1 flex-col justify-between gap-4 bg-white p-4 rounded-2xl'>

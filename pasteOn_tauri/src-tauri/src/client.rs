@@ -1,4 +1,8 @@
 use futures_util::StreamExt; // 确保包括这行来获得`.next()`方法
+use local_ip_address::local_ip;
+use std::sync::{Arc, Mutex};
+use crate::state::Clients;
+use tauri::Manager;
 
 pub async fn connect_and_listen_to_websocket(ip: Option<String>, port: Option<u16>) {
     let ip = ip.as_deref().unwrap_or("localhost");
