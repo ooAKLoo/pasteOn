@@ -1,4 +1,3 @@
-<script src="http://localhost:8097"></script>
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.jsx'

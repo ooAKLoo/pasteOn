@@ -123,6 +123,8 @@
   ```bash
   cd ../pasteOn_tauri/src-tauri
   cargo tauri build
+  // debug模式下打包
+   cargo tauri build --debug 
   ```
   这将基于您的新配置和正确的前端构建输出来打包应用。
 
