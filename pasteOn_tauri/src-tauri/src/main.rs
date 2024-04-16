@@ -70,7 +70,7 @@ async fn main() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![start_server_if_needed])
+        .invoke_handler(tauri::generate_handler![start_server_if_needed ,send_server_details])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -100,28 +100,3 @@ async fn start_server_if_needed(app_handle: tauri::AppHandle) {
         send_server_details(window, local_ip, 3031);
     }
 }
-
-// #[tauri::command]
-// fn start_server_if_needed() {
-//     let local_ip = local_ip().unwrap().to_string();
-//     let server_address = format!("{}:3031", local_ip);
-//     println!("Starting server if needed.");
-//     // 假设我们用某种方式来检查服务器是否已启动
-//     if !server_is_running().await {
-//         // 启动 WebSocket 服务器
-//         std::thread::spawn(move || {
-//             start_websocket_server(&server_address, clients);
-//         });
-//         println!("WebSocket server started at {}", server_address);
-
-//         // 注册 mDNS 服务
-//         register_mdns_service(&server_address);
-//     } else {
-//         println!("Server already running.");
-//     }
-
-//     // 发送服务器细节回前端
-//     if let Some(window) = app_handle.get_window("main") {
-//         send_server_details(window, local_ip, 3031).await;
-//     }
-// }

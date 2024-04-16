@@ -64,6 +64,6 @@ pub fn register_mdns_service() {
 
     mdns.register(websocket_service_info).expect("Failed to register WebSocket service");
 
-    thread::sleep(Duration::from_secs(5));
+    thread::sleep(Duration::from_secs(500));
     mdns.shutdown().unwrap();
 }
