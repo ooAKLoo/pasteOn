@@ -55,12 +55,6 @@ export function ShortcutSettings2() {
         };
     }, []);
 
-    // useEffect(() => {
-    //     console.log("config.shortcutSettings[scrollUp]=",config.shortcutSettings["scrollUp"]);
-    //     setShortcutUp(config.shortcutSettings["scrollUp"]);
-    //     setShortcutDown(config.shortcutSettings["scrollDown"]);
-    // }, [config.shortcutSettings.scrollUp]);
-
     useEffect(() => {
         // 当输入框失去焦点时才检查是否需要更新配置
         if (!isFocused) {

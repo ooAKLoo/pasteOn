@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import ColorSettings from './sets/ColorSettings';
 import { ShortcutSettings, ShortcutSettings2 } from './sets/ShortcutSettings';

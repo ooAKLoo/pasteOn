@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 function ItemsManager({ writeToClipboard, readFromClipboard, maxLength }) {
-  const [items, setItems] = useState(["192.168.1.134","1", "2", "3"]);
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
     const intervalId = setInterval(async () => {

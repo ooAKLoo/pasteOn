@@ -1,4 +1,4 @@
-// #![windows_subsystem = "windows"]
+#![windows_subsystem = "windows"]
 mod app;
 mod websocket; // Ensure this module uses ws for WebSocket handling
 mod mdns;
@@ -72,13 +72,13 @@ async fn main() {
                     let window = app_handle.get_window("main").unwrap();
                     {
                         let mut server_running = SERVER_RUNNING.lock().await;
-                    if !*server_running {
-                        println!("Starting WebSocket server at ");
-                        // 这里放置启动服务器的代码
-                        *server_running = true; // 更新服务器运行状态为 true
-                    } else {
-                        println!("Server already running at ");
-                    }
+                        if !*server_running {
+                            println!("Starting WebSocket server at ");
+                            // 这里放置启动服务器的代码
+                            *server_running = true; // 更新服务器运行状态为 true
+                        } else {
+                            println!("Server already running at ");
+                        }
                     }
                     send_server_details(window, my_local_ip.to_string(), 3031); // Default port for ws server
                     register_mdns_service();
@@ -96,13 +96,10 @@ async fn main() {
 
 #[tauri::command]
 async fn start_server_if_needed(app_handle: tauri::AppHandle) {
-    println!("1111111111111111111111111111");
     let local_ip = local_ip().unwrap().to_string();
-    println!("local_ip________");
     let server_address = format!("{}:3031", local_ip);
-    println!("server_address_______________");
     let mut server_running = SERVER_RUNNING.lock().await;
-    println!("22222222222222222222222222");
+
     if !*server_running {
         *server_running = true; // 更新服务器运行状态为 true
         std::thread::spawn(move || {

@@ -25,7 +25,7 @@ impl Handler for Server {
     
     fn on_message(&mut self, msg: Message) -> Result<()> {
         if let Ok(text) = msg.as_text() {
-            println!("Received message: {}", text);
+            // println!("Received message: {}", text);
             if text == "monitor check" {
                 // 这是一个监控检查消息，只回复发送者
                 self.out.send(Message::text("Monitor check successful"))?;

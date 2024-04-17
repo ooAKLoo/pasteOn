@@ -38,8 +38,6 @@ pub fn start_mdns_query(sender: oneshot::Sender<Option<(String, u16)>>) {
     let service = service_info.lock().unwrap().clone();
     if let Some((ip, port)) = &service {
         println!("Service discovery successful: IP: {}, Port: {}", ip, port);
-        // let window = app_handle.get_window("main").unwrap();
-        // send_server_details(window,ip.clone(), port.clone());
     } else {
         println!("No service found.");
     }
@@ -64,6 +62,6 @@ pub fn register_mdns_service() {
 
     mdns.register(websocket_service_info).expect("Failed to register WebSocket service");
 
-    thread::sleep(Duration::from_secs(500));
+    thread::sleep(Duration::from_secs(50000));
     mdns.shutdown().unwrap();
 }
