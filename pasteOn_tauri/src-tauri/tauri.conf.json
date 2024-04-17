@@ -70,7 +70,7 @@
       "dangerousUseHttpScheme": true
     },
     "systemTray": {
-      "iconPath": "icons/macAppIcon.png",
+      "iconPath": "icons/macTray.png",
       "iconAsTemplate": true
     },
     "bundle": {
@@ -78,7 +78,7 @@
       "targets": "all",
       "identifier": "com.dongju.pasteOn",
       "icon": [
-        "icons/macAppIcon.png",
+        "icons/appIcon.png",
         "icons/icon.icns",
         "icons/icon.ico"
       ]
