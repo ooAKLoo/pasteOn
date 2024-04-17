@@ -1,4 +1,4 @@
-// #![windows_subsystem = "windows"]
+#![windows_subsystem = "windows"]
 mod app;
 mod websocket; // Ensure this module uses ws for WebSocket handling
 mod mdns;
