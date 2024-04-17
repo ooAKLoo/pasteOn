@@ -81,7 +81,6 @@ function App() {
         setServerIp(ip);
         setServerPort(port);
         setHasConnected(false);  // 重置连接标记
-        setIsSetting(false);  // 重置设置标记
       }
     });
 
@@ -141,14 +140,14 @@ function App() {
     setIsSetting(true); // 开始操作时设置为 true
     invoke('start_server_if_needed')
       .then((message) => {
-        console.log(message);
         setIsSetting(false); // 操作完成后设置为 false
-        showNotification("Server set successfully", "success");
+        showNotification("Success", "success");
+        setConnectionStatus('Connected');
       })
       .catch((error) => {
         console.error(error);
         setIsSetting(false); // 发生错误也要设置为 false
-        showNotification("Failed to set server", "error");
+        showNotification("Failed", "error");
       });
   };
 
