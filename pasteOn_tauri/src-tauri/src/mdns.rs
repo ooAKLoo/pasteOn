@@ -56,7 +56,7 @@ pub fn register_mdns_service() {
         "PasteOn WebSocket Service",
         "pasteon.local.",
         &my_local_ip.to_string(),
-        3030,
+        3031,
         &properties[..],
     ).expect("Failed to create WebSocket service info");
 

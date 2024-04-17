@@ -59,7 +59,7 @@ function WebSocketManager({ serverIp, serverPort, onMessage, onError, onClose })
 
     // useEffect 仅在组件挂载时执行
     useEffect(() => {
-        connectWebSocket();
+        // connectWebSocket();
 
         return () => {
             if (websocket) {

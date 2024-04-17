@@ -81,6 +81,7 @@ function App() {
         setServerIp(ip);
         setServerPort(port);
         setHasConnected(false);  // 重置连接标记
+        setIsSetting(false);  // 重置设置标记
       }
     });
 
