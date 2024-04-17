@@ -1,14 +1,12 @@
-#![windows_subsystem = "windows"]
+// #![windows_subsystem = "windows"]
 mod app;
 mod websocket; // Ensure this module uses ws for WebSocket handling
 mod mdns;
 mod state;
-mod client;
 
 use state::Clients;
 use std::sync::Arc;
 use std::thread;
-use tokio::runtime::Runtime;
 use tokio::sync::{ oneshot, Mutex };
 use tauri::{ Manager }; // Ensure Manager trait is imported
 use crate::websocket::{ start_websocket_server };
@@ -17,7 +15,7 @@ use crate::app::{ send_server_details };
 use std::collections::HashMap;
 use local_ip_address::local_ip;
 use once_cell::sync::Lazy;
-use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu, WindowBuilder };
+use tauri::{ CustomMenuItem, SystemTray, SystemTrayEvent, SystemTrayMenu };
 
 // 定义全局的服务器状态标记
 static SERVER_RUNNING: Lazy<Mutex<bool>> = Lazy::new(|| Mutex::new(false));
@@ -26,15 +24,10 @@ static GLOBAL_CLIENTS: Lazy<Clients> = Lazy::new(|| { Arc::new(Mutex::new(HashMa
 
 #[tokio::main]
 async fn main() {
-    let (tx, rx) = oneshot::channel::<Option<(String, u16)>>();
-
     let my_local_ip = local_ip().unwrap();
 
     // 创建系统托盘菜单
-    let tray_menu = SystemTrayMenu::new()
-        // .add_item(CustomMenuItem::new("show", "Show"))
-        // .add_item(CustomMenuItem::new("hide", "Hide"))
-        .add_item(CustomMenuItem::new("quit", "Quit"));
+    let tray_menu = SystemTrayMenu::new().add_item(CustomMenuItem::new("quit", "Quit"));
 
     let tray = SystemTray::new().with_menu(tray_menu);
 
@@ -46,13 +39,6 @@ async fn main() {
                 SystemTrayEvent::MenuItemClick { id, .. } => {
                     let window = app.get_window("main").unwrap();
                     match id.as_str() {
-                        // "show" => {
-                        //     window.show().unwrap();
-                        //     window.set_focus().unwrap();
-                        // }
-                        // "hide" => {
-                        //     window.hide().unwrap();
-                        // }
                         "quit" => {
                             std::process::exit(0);
                         }
@@ -76,7 +62,6 @@ async fn main() {
                     send_server_details(window, ip, port);
                 } else {
                     println!("No service found, starting WebSocket server.");
-                    let rt = Runtime::new().unwrap();
 
                     thread::spawn(move || {
                         let server_address = format!("{}:{}", my_local_ip, "3031");
@@ -85,13 +70,15 @@ async fn main() {
 
                     println!("WebSocket server started successfully.");
                     let window = app_handle.get_window("main").unwrap();
-                    let mut server_running = SERVER_RUNNING.lock().await;
+                    {
+                        let mut server_running = SERVER_RUNNING.lock().await;
                     if !*server_running {
                         println!("Starting WebSocket server at ");
                         // 这里放置启动服务器的代码
                         *server_running = true; // 更新服务器运行状态为 true
                     } else {
                         println!("Server already running at ");
+                    }
                     }
                     send_server_details(window, my_local_ip.to_string(), 3031); // Default port for ws server
                     register_mdns_service();
@@ -109,10 +96,13 @@ async fn main() {
 
 #[tauri::command]
 async fn start_server_if_needed(app_handle: tauri::AppHandle) {
+    println!("1111111111111111111111111111");
     let local_ip = local_ip().unwrap().to_string();
+    println!("local_ip________");
     let server_address = format!("{}:3031", local_ip);
+    println!("server_address_______________");
     let mut server_running = SERVER_RUNNING.lock().await;
-
+    println!("22222222222222222222222222");
     if !*server_running {
         *server_running = true; // 更新服务器运行状态为 true
         std::thread::spawn(move || {

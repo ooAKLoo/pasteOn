@@ -9,7 +9,6 @@
 
 use tokio_tungstenite::tungstenite::protocol::Message;
 use futures_util::stream::SplitSink;
-use futures_util::SinkExt;
 use tokio::sync::{Mutex};
 use std::sync::Arc;
 use std::collections::HashMap;

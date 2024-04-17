@@ -41,8 +41,7 @@ function App() {
       if (data === "Monitor check successful" || data === "Hello Server!") {
         setConnectionStatus('Connected');
       } else {
-        // 处理其他类型的消息
-        console.log('Broadcast message:', data);
+        writeToClipboard(data);
       }
     },
     onError: (error) => {
@@ -50,12 +49,11 @@ function App() {
       setConnectionStatus('Error');
     },
     onClose: () => {
-      console.log('WebSocket closed');
       setConnectionStatus('Disconnected');
     }
   });
 
-  useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex, () => writeToClipboard(items[index].toString()));
+  useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex);
 
   useEffect(() => {
     setMaxLength(config.maxLength); // Update when config changes
@@ -99,7 +97,6 @@ function App() {
   }, [serverIp, serverPort, connectWebSocket, hasConnected]);
 
   useEffect(() => {
-    // 监听 items[0] 的变化
     if (websocket && websocket.readyState === WebSocket.OPEN) {
       websocket.send(items[0]);
       console.log(`Sent to server: ${items[0]}`);
@@ -120,7 +117,7 @@ function App() {
         clearInterval(intervalId);
       }
     };
-  }, [isExpanded, websocket]);
+  }, [isExpanded]);
 
   const toggleWindowSize = () => {
     const expanded = windowSize.height === 100;
@@ -135,13 +132,7 @@ function App() {
   };
 
   const handleServerDetailsChange = () => {
-    const newIp = serverIp
-    const newPort = serverPort
-    console.log(`Updated server details: ${newIp}:${newPort}`);
-    setServerIp(newIp);
-    setServerPort(newPort);
-
-    connectWebSocket();
+    setHasConnected(false);  // 重置连接标记
   };
 
   const handleSetAsServerClick = async () => {
@@ -161,32 +152,32 @@ function App() {
   };
 
   return (
+    <div
+      onDoubleClick={toggleWindowSize}
+      data-tauri-drag-region
+      style={detailStyle}
+      className={`flex flex-col w-full h-screen z-0 overflow-hidden rounded-xl transition-opacity ease-in-out duration-500 ${isVisible ? '' : 'opacity-0 pointer-events-none relative'}`}
+    >
       <div
-        onDoubleClick={toggleWindowSize}
         data-tauri-drag-region
-        style={detailStyle}
-        className={`flex flex-col w-full h-screen z-0 overflow-hidden rounded-xl transition-opacity ease-in-out duration-500 ${isVisible ? '' : 'opacity-0 pointer-events-none relative'}`}
+        style={mainStyle}
+        className={`flex flex-col w-screen ${isExpanded ? "h-1/3" : "h-screen"} z-10 max-h-200 p-2 text-ellipsis overflow-hidden items-center justify-center rounded-xl relative`}
       >
-        <div
-          data-tauri-drag-region
-          style={mainStyle}
-          className={`flex flex-col w-screen ${isExpanded ? "h-1/3" : "h-screen"} z-10 max-h-200 p-2 text-ellipsis overflow-hidden items-center justify-center rounded-xl relative`}
-        >
-          <NotificationBar />
-          <h1 data-tauri-drag-region className="w-full h-full text-base font-bold line-clamp-3 p-2">{items[0]}</h1>
-        </div>
-
-        <div className={`flex-grow no-scrollbar overflow-y-scroll transition-opacity duration-500 ease-in-out ${isExpanded ? 'animate-slide-down' : 'animate-collapse-zoom'}`}>
-          {isExpanded && <Settings connectionStatus={connectionStatus}
-            serverIp={serverIp} serverPort={serverPort}
-            setServerIp={setServerIp}
-            setServerPort={setServerPort}
-            onServerDetailsChange={handleServerDetailsChange}
-            onSetAsServerClick={handleSetAsServerClick}
-            isSetting={isSetting}
-          />}
-        </div>
+        <NotificationBar />
+        <h1 data-tauri-drag-region className="w-full h-full text-base font-bold line-clamp-3 p-2">{items[0]}</h1>
       </div>
+
+      <div className={`flex-grow no-scrollbar overflow-y-scroll transition-opacity duration-500 ease-in-out ${isExpanded ? 'animate-slide-down' : 'animate-collapse-zoom'}`}>
+        {isExpanded && <Settings connectionStatus={connectionStatus}
+          serverIp={serverIp} serverPort={serverPort}
+          setServerIp={setServerIp}
+          setServerPort={setServerPort}
+          onServerDetailsChange={handleServerDetailsChange}
+          onSetAsServerClick={handleSetAsServerClick}
+          isSetting={isSetting}
+        />}
+      </div>
+    </div>
   );
 }
 

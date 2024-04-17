@@ -4,10 +4,8 @@ extern crate ws;
 extern crate uuid;
 extern crate chrono;
 
-use uuid::Uuid;
 use chrono::Utc;
 use ws::{listen, Handler, Sender, Result, Message, Handshake, CloseCode};
-use std::sync::{Arc, Mutex};
 use crate::state::Clients;
 
 pub struct Server {
@@ -17,10 +15,12 @@ pub struct Server {
 
 impl Handler for Server {
     fn on_open(&mut self, _: Handshake) -> Result<()> {
-        let now = Utc::now();
-        let welcome_msg = format!("Welcome! Current time: {}", now.to_rfc3339());
-        self.out.send(Message::text(welcome_msg))?;
+        // let now = Utc::now();
+        // let welcome_msg = format!("Welcome! Current time: {}", now.to_rfc3339());
+        // self.out.send(Message::text(welcome_msg))?;
+        println!("WebSocket connection opened");
         Ok(())
+        
     }
     
     fn on_message(&mut self, msg: Message) -> Result<()> {

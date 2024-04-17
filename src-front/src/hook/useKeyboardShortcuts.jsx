@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { globalShortcut } from '@tauri-apps/api';
 import { useConfig } from './ConfigContext ';
 
-export function useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex, copyToClipboard) {
+export function useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex) {
     const { config } = useConfig();  // Use the config from ConfigContext
 
     // Register and unregister visibility toggle shortcut
@@ -27,13 +27,12 @@ export function useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex, copyT
     // Register and unregister arrow shortcuts based on visibility
     useEffect(() => {
         const registerArrows = async () => {
+            await unregisterArrows();
             await globalShortcut.register(config.shortcutSettings.scrollUp, () => {
                 adjustIndex(-1);
-                copyToClipboard();
             }).catch(console.error);
             await globalShortcut.register(config.shortcutSettings.scrollDown, () => {
                 adjustIndex(1);
-                copyToClipboard();
             }).catch(console.error);
         };
 
