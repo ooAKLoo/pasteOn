@@ -79,8 +79,7 @@
       "targets": "all",
       "identifier": "com.dongju.pasteOn",
       "icon": [
-        "icons/appIcon.png",
-        "icons/icon.icns",
+        "icons/macAppIcon.png",
         "icons/icon.ico"
       ]
     }
