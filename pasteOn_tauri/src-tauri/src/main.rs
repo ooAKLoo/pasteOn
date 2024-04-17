@@ -22,6 +22,8 @@ static SERVER_RUNNING: Lazy<Mutex<bool>> = Lazy::new(|| Mutex::new(false));
 
 static GLOBAL_CLIENTS: Lazy<Clients> = Lazy::new(|| { Arc::new(Mutex::new(HashMap::new())) });
 
+pub static SERVICE_REGISTERED: Lazy<Mutex<bool>> = Lazy::new(|| Mutex::new(false));
+
 #[tokio::main]
 async fn main() {
     let my_local_ip = local_ip().unwrap();
@@ -82,7 +84,7 @@ async fn main() {
                         }
                     }
                     send_server_details(window, my_local_ip.to_string(), 3031); // Default port for ws server
-                    register_mdns_service();
+                    register_mdns_service().await;
                 }
             });
 
@@ -117,6 +119,6 @@ async fn start_server_if_needed(app_handle: tauri::AppHandle) {
 
     if let Some(window) = app_handle.get_window("main") {
         send_server_details(window, local_ip, 3031);
-        register_mdns_service();
+        register_mdns_service().await;
     }
 }
