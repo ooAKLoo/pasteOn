@@ -71,6 +71,12 @@ function App() {
     setDetailStyle({ backgroundColor: isExpanded ? detailHSL : 'transparent' });
   }, [config.colorScheme, isVisible, isExpanded]);
 
+  useEffect(() => {
+    appWindow.setIgnoreCursorEvents(!isVisible)
+      .then(() => console.log(`Cursor events are now ${isVisible ? 'ignored' : 'processed'}.`))
+      .catch(error => console.error('Failed to set cursor events:', error));
+  }, [isVisible]);
+
   // 监听 Tauri 事件并更新 IP 和端口
   useEffect(() => {
     const unlisten = listen('server-details', (event) => {
