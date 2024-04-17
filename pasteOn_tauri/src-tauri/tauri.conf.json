@@ -60,6 +60,7 @@
         "resizable": false,
         "transparent": true,
         "alwaysOnTop": true,
+        "skipTaskbar": true,
         "focus": false
       }
     ],
@@ -67,6 +68,10 @@
     "security": {
       "csp": null,
       "dangerousUseHttpScheme": true
+    },
+    "systemTray": {
+      "iconPath": "icons/macAppIcon.png",
+      "iconAsTemplate": true
     },
     "bundle": {
       "active": true,
