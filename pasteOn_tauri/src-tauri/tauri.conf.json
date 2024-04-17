@@ -71,7 +71,7 @@
     },
     "systemTray": {
       "iconPath": "icons/macTray.png",
-      "iconAsTemplate": true
+      "iconAsTemplate": false
     },
     "bundle": {
       "active": true,

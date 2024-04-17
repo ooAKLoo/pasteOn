@@ -49,6 +49,7 @@ async fn main() {
             }
         })
         .setup(move |app| {
+            // app.set_activation_policy(tauri::ActivationPolicy::Accessory); // 设置应用程序的激活策略only for macOS
             let app_handle = app.app_handle(); // Get AppHandle
             tokio::spawn(async move {
                 let (tx_mdns, rx_mdns) = oneshot::channel();
