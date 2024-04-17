@@ -1,3 +1,4 @@
+workspace = { members = ["cert"] }
 [package]
 name = "pasteon_tauri"
 version = "0.0.0"
@@ -28,6 +29,3 @@ once_cell = "1.19.0"
 [features]
 # This feature is used for production builds or when a dev server is not specified, DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
-
-[profile.release]
-windows_subsystem = "windows"  # 这会隐藏命令行窗口

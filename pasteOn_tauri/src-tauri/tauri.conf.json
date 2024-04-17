@@ -65,16 +65,15 @@
     ],
     "macOSPrivateApi": true,
     "security": {
-      "csp": null
+      "csp": null,
+      "dangerousUseHttpScheme": true
     },
     "bundle": {
       "active": true,
       "targets": "all",
       "identifier": "com.dongju.pasteOn",
       "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
+        "icons/macAppIcon.png",
         "icons/icon.icns",
         "icons/icon.ico"
       ]

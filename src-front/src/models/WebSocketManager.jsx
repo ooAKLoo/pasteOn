@@ -30,7 +30,7 @@ function WebSocketManager({ serverIp, serverPort, onMessage, onError, onClose })
             console.log('Closing existing WebSocket connection.');
         }
 
-        const url = `wss://${serverIp}:${serverPort}`;
+        const url = `ws://${serverIp}:${serverPort}`;
         const ws = new WebSocket(url);
 
         ws.onopen = () => {
