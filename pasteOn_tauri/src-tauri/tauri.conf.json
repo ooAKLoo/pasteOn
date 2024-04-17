@@ -6,7 +6,7 @@
   },
   "package": {
     "productName": "pasteOn",
-    "version": "0.0.0"
+    "version": "0.1.0"
   },
   "tauri": {
     "allowlist": {
@@ -78,7 +78,9 @@
       "active": true,
       "targets": "all",
       "identifier": "com.dongju.pasteOn",
+      "copyright": "dongju",
       "icon": [
+        "icons/macAppIcon.icns",
         "icons/macAppIcon.png",
         "icons/icon.ico"
       ]
