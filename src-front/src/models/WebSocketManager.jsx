@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useCallback,useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 function WebSocketManager({ serverIp, serverPort, onMessage, onError, onClose }) {
     const [websocket, setWebSocket] = useState(null);
     const lastDetails = useRef({ ip: null, port: null });
+    const heartbeatInterval = useRef(null); // 用于存储心跳检测的定时器
+    const reconnectInterval = useRef(null); // 用于存储重连尝试的定时器
 
     // 验证服务器细节
     const validateServerDetails = useCallback((ip, port) => {
@@ -11,11 +13,22 @@ function WebSocketManager({ serverIp, serverPort, onMessage, onError, onClose })
         return ipRegex.test(ip) && portValid;
     }, []);
 
-    // 用于连接 WebSocket
+    const websocketRef = useRef(null);
+
+    useEffect(() => {
+        websocketRef.current = websocket;
+    }, [websocket]);
+    
+    const sendHeartbeat = useCallback(() => {
+        if (websocketRef.current && websocketRef.current.readyState === 1) {
+            websocketRef.current.send('ping');
+        }
+    }, []);  // websocket removed from dependencies
+
+
+    // 用于连接 WebSocket 的函数
     const connectWebSocket = useCallback(() => {
-        
-        // 检查新的 IP 和端口是否与上一次相同
-        if (websocket && websocket.readyState && websocket.readyState==1 && lastDetails.current.ip === serverIp && lastDetails.current.port === serverPort) {
+        if (websocket && websocket.readyState === WebSocket.OPEN && lastDetails.current.ip === serverIp && lastDetails.current.port === serverPort) {
             console.log('Attempted to connect using the same IP and port as before.');
             return;
         }
@@ -27,9 +40,8 @@ function WebSocketManager({ serverIp, serverPort, onMessage, onError, onClose })
         }
 
         if (websocket) {
-            websocket.close();
-            lastDetails.current = { ip: null, port: null };
             console.log('Closing existing WebSocket connection.');
+            websocket.close();
         }
 
         const url = `ws://${serverIp}:${serverPort}`;
@@ -39,6 +51,12 @@ function WebSocketManager({ serverIp, serverPort, onMessage, onError, onClose })
             console.log('WebSocket connected:', url);
             ws.send('Hello Server!');
             lastDetails.current = { ip: serverIp, port: serverPort };
+
+            clearInterval(reconnectInterval.current); // 清除重连尝试
+
+            // 设置心跳检测
+            clearInterval(heartbeatInterval.current);
+            heartbeatInterval.current = setInterval(sendHeartbeat, 3000); // 每30秒发送一次心跳
         };
 
         ws.onmessage = event => {
@@ -51,26 +69,33 @@ function WebSocketManager({ serverIp, serverPort, onMessage, onError, onClose })
         };
 
         ws.onclose = event => {
-            console.log('WebSocket closed', event);
             onClose && onClose(event);
+
+            // 清除心跳检测
+            clearInterval(heartbeatInterval.current);
+
+            // 尝试重新连接
+            if (!reconnectInterval.current) {
+                reconnectInterval.current = setInterval(connectWebSocket, 5000); // 每5秒尝试重新连接
+            }
         };
 
         setWebSocket(ws);
-    }, [serverIp, serverPort, validateServerDetails, websocket, onMessage, onError, onClose]);
+    }, [serverIp, serverPort, validateServerDetails,  onError, onMessage, onClose]);
 
-    // useEffect 仅在组件挂载时执行
     useEffect(() => {
-        // connectWebSocket();
+        connectWebSocket();
 
         return () => {
             if (websocket) {
                 websocket.close();
             }
+            clearInterval(heartbeatInterval.current);
+            clearInterval(reconnectInterval.current);
         };
-    }, []); // 空依赖数组，只在挂载时执行
+    }, []);
 
-    // 返回连接函数，以便可以手动触发重连
-    return { websocket,connectWebSocket };
+    return { websocket, connectWebSocket };
 }
 
 export default WebSocketManager;

@@ -38,14 +38,13 @@ function App() {
     serverIp,
     serverPort,
     onMessage: (data) => {
-      if (data === "Monitor check successful" || data === "Hello Server!") {
+      if (data === "pong" || data === "Hello Server!") {
         setConnectionStatus('Connected');
       } else {
         writeToClipboard(data);
       }
     },
     onError: (error) => {
-      console.error('WebSocket Error:', error);
       setConnectionStatus('Error');
     },
     onClose: () => {
@@ -108,29 +107,6 @@ function App() {
       console.log(`Sent to server: ${items[0]}`);
     }
   }, [items[0], websocket]);  // 添加 websocket 作为依赖，以确保使用最新的连接
-
-  useEffect(() => {
-    let intervalId;
-    if (isExpanded && websocket && websocket.readyState === WebSocket.OPEN) {
-      intervalId = setInterval(() => {
-        console.log('Sending monitor check');
-        websocket.send('monitor check');  // Replace 'monitor check' with your actual monitoring message
-      }, 6000);
-    }
-    else if (isExpanded && websocket && websocket.readyState !== WebSocket.OPEN) {
-     
-      intervalId = setInterval(() => {
-        console.log('Attempting to reconnect');
-        connectWebSocket();
-      }, 6000);
-    }
-
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [isExpanded]);
 
   const toggleWindowSize = () => {
     const expanded = windowSize.height === 100;

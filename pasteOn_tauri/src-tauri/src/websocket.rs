@@ -15,16 +15,15 @@ pub struct Server {
 
 impl Handler for Server {
     fn on_open(&mut self, _: Handshake) -> Result<()> {
-        println!("WebSocket connection opened");
         Ok(())
         
     }
     
     fn on_message(&mut self, msg: Message) -> Result<()> {
         if let Ok(text) = msg.as_text() {
-            if text == "monitor check" {
+            if text == "ping" {
                 // 这是一个监控检查消息，只回复发送者
-                self.out.send(Message::text("Monitor check successful"))?;
+                self.out.send(Message::text("pong"))?;
             } else {
                 // 这不是监控检查消息，广播给所有客户端
                 self.out.broadcast(Message::text(text))?;

@@ -5,7 +5,7 @@
     "withGlobalTauri": true
   },
   "package": {
-    "productName": "pasteOn",
+    "productName": "PasteOn",
     "version": "0.1.0"
   },
   "tauri": {
@@ -53,7 +53,7 @@
     },
     "windows": [
       {
-        "title": "pasteOn",
+        "title": "PasteOn",
         "width": 400,
         "height": 100,
         "decorations": false,
