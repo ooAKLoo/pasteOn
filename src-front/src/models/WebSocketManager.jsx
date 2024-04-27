@@ -21,7 +21,6 @@ function WebSocketManager({ serverIp, serverPort, onMessage, onError, onClose })
     
     const sendHeartbeat = useCallback(() => {
         if (websocketRef.current && websocketRef.current.readyState === 1) {
-            console.log('Sending heartbeat...');
             websocketRef.current.send('ping');
         }
     }, []);  // websocket removed from dependencies
@@ -41,7 +40,6 @@ function WebSocketManager({ serverIp, serverPort, onMessage, onError, onClose })
         }
 
         if (websocket) {
-            console.log('Closing existing WebSocket connection.');
             websocket.close();
         }
 
@@ -49,7 +47,6 @@ function WebSocketManager({ serverIp, serverPort, onMessage, onError, onClose })
         const ws = new WebSocket(url);
 
         ws.onopen = () => {
-            console.log('WebSocket connected:', url);
             ws.send('Hello Server!');
             lastDetails.current = { ip: serverIp, port: serverPort };
 
