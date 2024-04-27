@@ -15,9 +15,6 @@ pub struct Server {
 
 impl Handler for Server {
     fn on_open(&mut self, _: Handshake) -> Result<()> {
-        // let now = Utc::now();
-        // let welcome_msg = format!("Welcome! Current time: {}", now.to_rfc3339());
-        // self.out.send(Message::text(welcome_msg))?;
         println!("WebSocket connection opened");
         Ok(())
         
@@ -25,7 +22,6 @@ impl Handler for Server {
     
     fn on_message(&mut self, msg: Message) -> Result<()> {
         if let Ok(text) = msg.as_text() {
-            // println!("Received message: {}", text);
             if text == "monitor check" {
                 // 这是一个监控检查消息，只回复发送者
                 self.out.send(Message::text("Monitor check successful"))?;

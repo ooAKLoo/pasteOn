@@ -13,8 +13,9 @@ function WebSocketManager({ serverIp, serverPort, onMessage, onError, onClose })
 
     // 用于连接 WebSocket
     const connectWebSocket = useCallback(() => {
+        
         // 检查新的 IP 和端口是否与上一次相同
-        if (websocket && lastDetails.current.ip === serverIp && lastDetails.current.port === serverPort) {
+        if (websocket && websocket.readyState && websocket.readyState==1 && lastDetails.current.ip === serverIp && lastDetails.current.port === serverPort) {
             console.log('Attempted to connect using the same IP and port as before.');
             return;
         }

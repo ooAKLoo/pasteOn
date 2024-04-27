@@ -117,6 +117,13 @@ function App() {
         websocket.send('monitor check');  // Replace 'monitor check' with your actual monitoring message
       }, 6000);
     }
+    else if (isExpanded && websocket && websocket.readyState !== WebSocket.OPEN) {
+     
+      intervalId = setInterval(() => {
+        console.log('Attempting to reconnect');
+        connectWebSocket();
+      }, 6000);
+    }
 
     return () => {
       if (intervalId) {
@@ -143,16 +150,16 @@ function App() {
 
   const handleSetAsServerClick = async () => {
     console.log("Set as server with details:");
-    setIsSetting(true); // 开始操作时设置为 true
+    setIsSetting(true);
     invoke('start_server_if_needed')
       .then((message) => {
-        setIsSetting(false); // 操作完成后设置为 false
+        setIsSetting(false);
         showNotification("Success", "success");
         setConnectionStatus('Connected');
       })
       .catch((error) => {
         console.error(error);
-        setIsSetting(false); // 发生错误也要设置为 false
+        setIsSetting(false);
         showNotification("Failed", "error");
       });
   };

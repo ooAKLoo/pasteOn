@@ -133,4 +133,9 @@
 - **检查输出**:
   打包完成后，可执行文件和相关资源将被放置在 `src-tauri/target/release` 目录下的 `bundle` 文件夹内。根据您的操作系统，您将找到适用的可执行文件或安装程序。
 
+
+  生成ssl密钥，让开发环境的服务器也运行和生产环境一样的https上
+  openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout localhost.key -out localhost.crt -config openssl.cnf
+
+
 通过以上详细步骤，您将能够成功解决运行问题，并将您的 Tauri 应用打包成可执行程序。这些文件随后可以分发给用户，支持在不同操作系统上安装和运行。如果在执行这些步骤中遇到任何问题，请确保所有路径和命令均按照上述说明正确执行。
