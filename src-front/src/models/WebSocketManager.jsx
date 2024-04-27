@@ -21,6 +21,7 @@ function WebSocketManager({ serverIp, serverPort, onMessage, onError, onClose })
     
     const sendHeartbeat = useCallback(() => {
         if (websocketRef.current && websocketRef.current.readyState === 1) {
+            console.log('Sending heartbeat...');
             websocketRef.current.send('ping');
         }
     }, []);  // websocket removed from dependencies
@@ -56,7 +57,7 @@ function WebSocketManager({ serverIp, serverPort, onMessage, onError, onClose })
 
             // 设置心跳检测
             clearInterval(heartbeatInterval.current);
-            heartbeatInterval.current = setInterval(sendHeartbeat, 3000); // 每30秒发送一次心跳
+            heartbeatInterval.current = setInterval(sendHeartbeat, 30000); // 每30秒发送一次心跳
         };
 
         ws.onmessage = event => {

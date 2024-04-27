@@ -39,6 +39,7 @@ function App() {
     serverPort,
     onMessage: (data) => {
       if (data === "pong" || data === "Hello Server!") {
+        console.log(`Received from server: ${data}`);
         setConnectionStatus('Connected');
       } else {
         writeToClipboard(data);
@@ -131,7 +132,6 @@ function App() {
       .then((message) => {
         setIsSetting(false);
         showNotification("Success", "success");
-        setConnectionStatus('Connected');
       })
       .catch((error) => {
         console.error(error);
