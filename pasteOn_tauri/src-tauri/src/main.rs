@@ -1,4 +1,4 @@
-#![windows_subsystem = "windows"]
+// #![windows_subsystem = "windows"]
 mod app;
 mod websocket; // Ensure this module uses ws for WebSocket handling
 mod mdns;
@@ -90,7 +90,7 @@ async fn main() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![start_server_if_needed, send_server_details])
+        .invoke_handler(tauri::generate_handler![start_server_if_needed, send_server_details,get_hostname])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -120,5 +120,18 @@ async fn start_server_if_needed(app_handle: tauri::AppHandle) {
     if let Some(window) = app_handle.get_window("main") {
         send_server_details(window, local_ip, 3031);
         register_mdns_service().await;
+    }
+}
+
+#[tauri::command]
+fn get_hostname() -> String {
+    hostname::get().unwrap().into_string().unwrap()
+}
+
+#[tauri::command]
+fn get_local_ip() -> String {
+    match local_ip() {
+        Ok(ip) => ip.to_string(),
+        Err(_) => "Unable to get IP".to_string(),
     }
 }

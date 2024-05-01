@@ -7,7 +7,7 @@ extern crate chrono;
 use chrono::Utc;
 use ws::{listen, Handler, Sender, Result, Message, Handshake, CloseCode};
 use crate::state::Clients;
-
+use tokio::runtime::Runtime;
 pub struct Server {
     out: Sender,
     clients: Clients,
@@ -24,6 +24,16 @@ impl Handler for Server {
             if text == "ping" {
                 // 这是一个监控检查消息，只回复发送者
                 self.out.send(Message::text("pong"))?;
+            }  else if text == "get_clients" {
+                let mut rt = Runtime::new().unwrap();
+                rt.block_on(async {
+                    let clients = self.clients.lock().await;
+                    let client_list: Vec<String> = clients.keys().cloned().collect();
+                    // 打印输出客户端信息
+                    println!("Connected clients: {:?}", client_list);
+                    
+                    self.out.send(Message::text(format!("Clients: {:?}", client_list)));
+                });
             } else {
                 // 这不是监控检查消息，广播给所有客户端
                 self.out.broadcast(Message::text(text))?;

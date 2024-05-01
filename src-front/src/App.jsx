@@ -11,6 +11,7 @@ import { useConfig } from './hook/ConfigContext ';
 import { hexToHSL } from './controller/util';
 import WebSocketManager from './models/WebSocketManager';
 import { invoke } from '@tauri-apps/api/tauri';
+import FileTransferView from './views/files/FileTransferView';
 
 function App() {
   const [isVisible, setIsVisible] = useState(true);
@@ -51,6 +52,9 @@ function App() {
       setConnectionStatus('Disconnected');
     }
   });
+
+  const [isFileDragged, setIsFileDragged] = useState(false);
+  const [droppedFiles, setDroppedFiles] = useState([]);
 
   useKeyboardShortcuts(isVisible, setIsVisible, adjustIndex);
 
@@ -130,6 +134,7 @@ function App() {
     invoke('start_server_if_needed')
       .then((message) => {
         setIsSetting(false);
+        websocket.send('ping');
         showNotification("Success", "success");
       })
       .catch((error) => {
@@ -139,6 +144,30 @@ function App() {
       });
   };
 
+
+  useEffect(() => {
+    const unlisten = listen('tauri://file-drop', (event) => {
+      // console.log('File dropped', event.payload);  // 查看拖放的文件信息
+      setIsFileDragged(true);  // 更新状态为拖放文件状态
+      if (event.payload && Array.isArray(event.payload)) {
+        const files = event.payload.map(filePath => {
+          const parts = filePath.split('\\'); // 假设是 Windows 路径，用反斜杠分割
+          const name = parts.pop(); // 获取路径的最后一部分作为文件名
+          return { path: filePath, name }; // 仅返回路径和文件名
+        });
+        // console.log('Files:', files); // 查看解析后的文件信息
+        setDroppedFiles(files); // 保存文件信息
+        setIsFileDragged(true); // 更新状态为拖放文件状态
+        // setIsExpanded(true);
+        // toggleWindowSize();
+      }
+    });
+
+    return () => {
+      unlisten.then(removeListener => removeListener());
+    };
+  }, []);
+
   return (
     <div
       onDoubleClick={toggleWindowSize}
@@ -146,25 +175,33 @@ function App() {
       style={detailStyle}
       className={`flex flex-col w-full h-screen z-0 overflow-hidden rounded-xl transition-opacity ease-in-out duration-500 ${isVisible ? '' : 'opacity-0 pointer-events-none relative'}`}
     >
-      <div
-        data-tauri-drag-region
-        style={mainStyle}
-        className={`flex flex-col w-screen ${isExpanded ? "h-1/3" : "h-screen"} z-10 max-h-200 p-2 text-ellipsis overflow-hidden items-center justify-center rounded-xl relative`}
-      >
-        <NotificationBar />
-        <h1 data-tauri-drag-region className="w-full h-full text-base font-bold line-clamp-3 p-2">{items[0]}</h1>
-      </div>
+      {isFileDragged ? (
+        <FileTransferView  files={droppedFiles} config={config} toggleFileDragged={() => setIsFileDragged(false)} websocket={websocket} />
+      ) : (
+        <>
+          <div
+            data-tauri-drag-region
+            style={mainStyle}
+            className={`flex flex-col w-screen ${isExpanded ? "h-1/3" : "h-screen"} z-10 max-h-200 p-2 text-ellipsis overflow-hidden items-center justify-center rounded-xl relative`}
+          >
+            <NotificationBar />
+            <h1 data-tauri-drag-region className="w-full h-full text-base font-bold line-clamp-3 p-2">{items[0]}</h1>
+          </div>
 
-      <div className={`flex-grow no-scrollbar overflow-y-scroll transition-opacity duration-500 ease-in-out ${isExpanded ? 'animate-slide-down' : 'animate-collapse-zoom'}`}>
-        {isExpanded && <Settings connectionStatus={connectionStatus}
-          serverIp={serverIp} serverPort={serverPort}
-          setServerIp={setServerIp}
-          setServerPort={setServerPort}
-          onServerDetailsChange={handleServerDetailsChange}
-          onSetAsServerClick={handleSetAsServerClick}
-          isSetting={isSetting}
-        />}
-      </div>
+          <div className={`flex-grow no-scrollbar overflow-y-scroll transition-opacity duration-500 ease-in-out ${isExpanded ? 'animate-slide-down' : 'animate-collapse-zoom'}`}>
+            {isExpanded && <Settings connectionStatus={connectionStatus}
+              serverIp={serverIp} serverPort={serverPort}
+              setServerIp={setServerIp}
+              setServerPort={setServerPort}
+              onServerDetailsChange={handleServerDetailsChange}
+              onSetAsServerClick={handleSetAsServerClick}
+              isSetting={isSetting}
+            />}
+          </div>
+        </>
+      )
+
+      }
     </div>
   );
 }
